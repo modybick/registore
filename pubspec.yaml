@@ -1,0 +1,29 @@
+name: registore
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  audioplayers: ^6.5.0
+  cupertino_icons: ^1.0.8
+  flutter:
+    sdk: flutter
+  mobile_scanner: ^7.0.1
+  provider: ^6.1.5+1
+  vibration: ^3.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/sounds/success.mp3
+    - assets/sounds/error.mp3
+    - assets/sounds/checkout.mp3
