@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:registore/providers/settings_provider.dart';
 import 'package:registore/screens/payment/payment_screen.dart';
 import 'package:registore/screens/sale_history/sale_histry_screen.dart';
 import 'package:registore/screens/settings/settings_screen.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_scaffold.dart';
 import 'widgets/product_list_bottom_sheet.dart';
 
 // --- 親ウィジェット ---
-// 画面全体のロジックと状態を管理する
-
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -22,19 +20,50 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final MobileScannerController _scannerController =
-      MobileScannerController();
   final SoundService _soundService = SoundService();
   bool _isProcessing = false;
 
-  void _onBarcodeDetected(BarcodeCapture capture) async {
-    // ... (このメソッドの中身は変更なし)
-    if (_isProcessing) {
-      return;
-    }
+  @override
+  Widget build(BuildContext context) {
+    // 1. 親ウィジェットが`watch`でSettingsProviderの変更を監視する
+    final settingsProvider = context
+        .watch<SettingsProvider>();
+
+    return AppScaffold(
+      body: Column(
+        children: [
+          // 2. 監視して得た最新の設定を、子ウィジェットに渡す
+          _ScannerView(
+            key: ValueKey(
+              settingsProvider.activeBarcodeFormats
+                  .toString(),
+            ),
+            formats: settingsProvider.activeBarcodeFormats,
+            onDetect: (capture) => _onBarcodeDetected(
+              capture,
+              settingsProvider.scanInterval,
+            ),
+          ),
+          const Expanded(child: _CartListView()),
+          _ControlPanel(
+            onClearCart: _showClearCartDialog,
+            onShowProductList: _showProductListBottomSheet,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // scanIntervalを引数で受け取るように変更
+  void _onBarcodeDetected(
+    BarcodeCapture capture,
+    double scanInterval,
+  ) async {
+    if (_isProcessing) return;
     setState(() {
       _isProcessing = true;
     });
+
     final String? barcodeValue =
         capture.barcodes.first.rawValue;
     if (barcodeValue != null && barcodeValue.isNotEmpty) {
@@ -65,10 +94,7 @@ class _CartScreenState extends State<CartScreen> {
           ),
         );
       }
-
-      final scanInterval = context
-          .read<SettingsProvider>()
-          .scanInterval;
+      // 引数で渡された最新のスキャン間隔を使う
       await Future.delayed(
         Duration(
           milliseconds: (scanInterval * 1000).toInt(),
@@ -83,7 +109,6 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _showClearCartDialog() {
-    // ... (このメソッドの中身は変更なし)
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -110,7 +135,6 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _showProductListBottomSheet() {
-    // ... (このメソッドの中身は変更なし)
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -124,49 +148,18 @@ class _CartScreenState extends State<CartScreen> {
       },
     );
   }
-
-  @override
-  void dispose() {
-    _scannerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-      // appBarは廃止したので指定しない
-      body: Column(
-        children: [
-          // スキャナ部分
-          _ScannerView(
-            controller: _scannerController,
-            onDetect: _onBarcodeDetected,
-          ),
-
-          // カートリスト部分 (Stackを削除しシンプルに)
-          const Expanded(child: _CartListView()),
-
-          // 新しい操作パネル
-          _ControlPanel(
-            onClearCart: _showClearCartDialog,
-            onShowProductList: _showProductListBottomSheet,
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // --- 子ウィジェット群 ---
 
-// _ScannerView, _CartListView は以前のコードから変更なし
-/// 1. バーコードスキャナUIを表示するウィジェット
+/// 1. バーコードスキャナUIを表示し、自身のコントローラーを管理するウィジェット
 class _ScannerView extends StatefulWidget {
-  final MobileScannerController controller;
+  final List<BarcodeFormat> formats;
   final void Function(BarcodeCapture) onDetect;
 
   const _ScannerView({
-    required this.controller,
+    super.key, // Keyを受け取れるようにする
+    required this.formats,
     required this.onDetect,
   });
 
@@ -176,25 +169,25 @@ class _ScannerView extends StatefulWidget {
 
 class _ScannerViewState extends State<_ScannerView>
     with SingleTickerProviderStateMixin {
+  late final MobileScannerController _controller;
   late final AnimationController _animationController;
-
-  final Rect scanWindow = Rect.fromCenter(
-    center: const Offset(0.5, 0.5), // ビューの中心
-    width: double.infinity * 0.8,
-    height: 120, // ビューの高さの(120 / 150)
-  );
 
   @override
   void initState() {
     super.initState();
+    // initStateで、親から渡された初期フォーマットでコントローラーを生成
+    _controller = MobileScannerController(
+      formats: widget.formats,
+    );
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: false);
+    )..repeat();
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -207,13 +200,13 @@ class _ScannerViewState extends State<_ScannerView>
         alignment: Alignment.center,
         children: [
           MobileScanner(
-            controller: widget.controller,
+            controller: _controller,
             onDetect: widget.onDetect,
             scanWindow: Rect.fromLTWH(
               0,
               0,
               MediaQuery.of(context).size.width,
-              MediaQuery.of(context).size.height,
+              150,
             ),
           ),
           FadeTransition(
@@ -233,6 +226,14 @@ class _ScannerViewState extends State<_ScannerView>
               ),
             ),
           ),
+          const Text(
+            'バーコードを枠内にスキャンしてください',
+            style: TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.black54,
+              fontSize: 16,
+            ),
+          ),
         ],
       ),
     );
@@ -245,11 +246,9 @@ class _CartListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Consumerウィジェットを使い、CartProviderの変更があった場合のみこの部分を再描画する
     return Consumer<CartProvider>(
       builder: (context, cart, child) {
         if (cart.items.isEmpty) {
-          // カートが空の場合は、再描画の必要がない `child` ウィジェットを表示
           return child!;
         }
         return ListView.builder(
@@ -309,7 +308,6 @@ class _CartListView extends StatelessWidget {
           },
         );
       },
-      // builderの `child` 引数に渡されるウィジェット。これは再描画されない。
       child: const Center(
         child: Text(
           '商品をスキャンしてください',
@@ -323,7 +321,7 @@ class _CartListView extends StatelessWidget {
   }
 }
 
-/// 3. 新しい操作パネルウィジェット
+/// 3. 操作パネルウィジェット
 class _ControlPanel extends StatelessWidget {
   final VoidCallback onClearCart;
   final VoidCallback onShowProductList;
@@ -335,7 +333,6 @@ class _ControlPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Consumerを使ってカートの状態を監視
     return Consumer<CartProvider>(
       builder: (context, cart, child) {
         final bool isCartEmpty = cart.items.isEmpty;
@@ -354,10 +351,8 @@ class _ControlPanel extends StatelessWidget {
             ],
           ),
           child: Column(
-            // 子ウィジェットを横いっぱいに広げる
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- 合計金額 ---
               Padding(
                 padding: const EdgeInsets.only(
                   bottom: 12.0,
@@ -370,15 +365,12 @@ class _ControlPanel extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-
-              // --- 会計ボタンとクリアボタン ---
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.delete_sweep),
                       label: const Text('カートをクリア'),
-                      // カートが空の場合はボタンを無効化
                       onPressed: isCartEmpty
                           ? null
                           : onClearCart,
@@ -400,11 +392,9 @@ class _ControlPanel extends StatelessWidget {
                         Icons.shopping_cart_checkout,
                       ),
                       label: const Text('会計へ進む'),
-                      // カートが空の場合はボタンを無効化
                       onPressed: isCartEmpty
                           ? null
                           : () async {
-                              // Navigator.pushから結果を受け取る
                               final result =
                                   await Navigator.push<
                                     bool
@@ -422,8 +412,6 @@ class _ControlPanel extends StatelessWidget {
                                           ),
                                     ),
                                   );
-
-                              // もし会計が完了(result == true)して戻ってきたら、カートをクリアする
                               if (result == true &&
                                   context.mounted) {
                                 context
@@ -442,8 +430,6 @@ class _ControlPanel extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Divider(),
-
-              // --- ナビゲーションボタン ---
               Row(
                 mainAxisAlignment:
                     MainAxisAlignment.spaceAround,

@@ -76,6 +76,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // SettingsProviderを監視
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
+        // ラジオボタンの選択肢をデータとして定義 (タイトル: 値)
+        final barcodeOptions = {
+          '1次元バーコードのみ (JANコードなど)': BarcodeScanType.oneD,
+          '2次元バーコードのみ (QRコードなど)': BarcodeScanType.twoD,
+          '両方を読み取る': BarcodeScanType.both,
+        };
         return AppScaffold(
           appBar: AppBar(title: const Text('設定')),
           body: ListView(
@@ -119,6 +125,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+
+              const Divider(height: 30),
+
+              // --- バーコード種別設定 ---
+              const ListTile(
+                leading: Icon(Icons.barcode_reader),
+                title: Text(
+                  '読み取り対象バーコード',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Column(
+                children: barcodeOptions.entries.map((
+                  entry,
+                ) {
+                  return RadioListTile<BarcodeScanType>(
+                    title: Text(entry.key),
+                    value: entry.value,
+                    groupValue: settings.barcodeScanType,
+                    onChanged: (BarcodeScanType? value) {
+                      if (value != null) {
+                        settings.updateBarcodeScanType(
+                          value,
+                        );
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+
               const Divider(height: 30),
 
               // --- 商品DBのインポート ---
@@ -183,6 +221,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
               ),
+
+              const Divider(height: 30),
+
               // --- 決済方法 ---
               ListTile(
                 leading: const Icon(Icons.payment),
