@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/providers/settings_provider.dart';
+import 'package:registore/screens/payment/payment_screen.dart';
+import 'package:registore/screens/sale_history/sale_histry_screen.dart';
+import 'package:registore/screens/settings/settings_screen.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/sound_service.dart';
@@ -53,17 +57,23 @@ class _CartScreenState extends State<CartScreen> {
             behavior: SnackBarBehavior.floating,
             margin: EdgeInsets.only(
               bottom:
-                  MediaQuery.of(context).size.height -
-                  150 -
-                  kToolbarHeight,
+                  MediaQuery.of(context).size.height - 150,
               left: 16,
               right: 16,
             ),
-            duration: const Duration(seconds: 2),
+            duration: const Duration(milliseconds: 1500),
           ),
         );
       }
-      await Future.delayed(const Duration(seconds: 2));
+
+      final scanInterval = context
+          .read<SettingsProvider>()
+          .scanInterval;
+      await Future.delayed(
+        Duration(
+          milliseconds: (scanInterval * 1000).toInt(),
+        ),
+      );
     }
     if (mounted) {
       setState(() {
@@ -168,6 +178,12 @@ class _ScannerViewState extends State<_ScannerView>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
 
+  final Rect scanWindow = Rect.fromCenter(
+    center: const Offset(0.5, 0.5), // ビューの中心
+    width: double.infinity * 0.8,
+    height: 120, // ビューの高さの(120 / 150)
+  );
+
   @override
   void initState() {
     super.initState();
@@ -193,6 +209,12 @@ class _ScannerViewState extends State<_ScannerView>
           MobileScanner(
             controller: widget.controller,
             onDetect: widget.onDetect,
+            scanWindow: Rect.fromLTWH(
+              0,
+              0,
+              MediaQuery.of(context).size.width,
+              MediaQuery.of(context).size.height,
+            ),
           ),
           FadeTransition(
             opacity: _animationController.drive(
@@ -209,14 +231,6 @@ class _ScannerViewState extends State<_ScannerView>
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-            ),
-          ),
-          const Text(
-            'バーコードを枠内にスキャンしてください',
-            style: TextStyle(
-              color: Colors.white,
-              backgroundColor: Colors.black54,
-              fontSize: 16,
             ),
           ),
         ],
@@ -248,17 +262,6 @@ class _CartListView extends StatelessWidget {
                 vertical: 4,
               ),
               child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).primaryColor,
-                  child: Text(
-                    '${item.quantity}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
                 title: Text(item.name),
                 subtitle: Text(
                   '単価: ¥${item.price.toStringAsFixed(0)}',
@@ -276,6 +279,17 @@ class _CartListView extends StatelessWidget {
                             .read<CartProvider>()
                             .decrementItem(item.barcode);
                       },
+                    ),
+                    CircleAvatar(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).primaryColor,
+                      child: Text(
+                        '${item.quantity}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(
@@ -361,24 +375,6 @@ class _ControlPanel extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.payment),
-                      label: const Text('会計へ進む'),
-                      // カートが空の場合はボタンを無効化
-                      onPressed: isCartEmpty
-                          ? null
-                          : () {
-                              // TODO: 会計画面への遷移
-                            },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.delete_sweep),
                       label: const Text('カートをクリア'),
@@ -391,6 +387,51 @@ class _ControlPanel extends StatelessWidget {
                         side: const BorderSide(
                           color: Colors.red,
                         ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(
+                        Icons.shopping_cart_checkout,
+                      ),
+                      label: const Text('会計へ進む'),
+                      // カートが空の場合はボタンを無効化
+                      onPressed: isCartEmpty
+                          ? null
+                          : () async {
+                              // Navigator.pushから結果を受け取る
+                              final result =
+                                  await Navigator.push<
+                                    bool
+                                  >(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          PaymentScreen(
+                                            cartItems: cart
+                                                .items
+                                                .values
+                                                .toList(),
+                                            totalAmount: cart
+                                                .totalAmount,
+                                          ),
+                                    ),
+                                  );
+
+                              // もし会計が完了(result == true)して戻ってきたら、カートをクリアする
+                              if (result == true &&
+                                  context.mounted) {
+                                context
+                                    .read<CartProvider>()
+                                    .clearCart();
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                         ),
@@ -414,14 +455,26 @@ class _ControlPanel extends StatelessWidget {
                   ),
                   TextButton.icon(
                     onPressed: () {
-                      // TODO: 販売履歴画面への遷移
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const SalesHistoryScreen(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.history),
                     label: const Text('販売履歴'),
                   ),
                   TextButton.icon(
                     onPressed: () {
-                      // TODO: 設定画面への遷移
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const SettingsScreen(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.settings),
                     label: const Text('設定'),

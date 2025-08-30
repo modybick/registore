@@ -117,8 +117,6 @@ class _ProductListBottomSheetState
                             context
                                 .read<CartProvider>()
                                 .addItem(product);
-                            // ボトムシートを閉じる
-                            Navigator.pop(context);
                           },
                         );
                       },

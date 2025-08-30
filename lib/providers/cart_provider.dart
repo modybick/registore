@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:registore/models/sale_detail_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
 
@@ -92,6 +93,31 @@ class CartProvider with ChangeNotifier {
       // 商品の数量が1の場合は、カートからその商品を削除する。
       _items.remove(barcode);
     }
+    notifyListeners();
+  }
+
+  /// 販売履歴の詳細リストを使って、現在のカートを完全に上書きする
+  void overwriteCartWithDetails(List<SaleDetail> details) {
+    // 1. 現在のカートを空にする
+    _items.clear();
+
+    // 2. 履歴の各商品を新しいカートアイテムとして追加する
+    for (final detail in details) {
+      // 履歴から復元する場合、ユニークなバーコードを生成する
+      // (同じ商品名でも価格が違う場合を考慮し、価格もキーに含めるとより安全)
+      final String dummyBarcode =
+          'from_history_${detail.productName}_${detail.price}';
+
+      // CartItemを直接生成し、Mapに追加する
+      _items[dummyBarcode] = CartItem(
+        barcode: dummyBarcode,
+        name: detail.productName,
+        price: detail.price,
+        quantity: detail.quantity, // 履歴の数量をそのまま設定
+      );
+    }
+
+    // 3. 処理完了後、UIに変更を一度だけ通知する
     notifyListeners();
   }
 

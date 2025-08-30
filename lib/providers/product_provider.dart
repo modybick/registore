@@ -49,4 +49,16 @@ class ProductProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  /// 商品リストを強制的に再読み込みする
+  Future<void> reloadProducts() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _products = await DatabaseService.instance
+        .getAllProducts();
+
+    _isLoading = false;
+    notifyListeners();
+  }
 }

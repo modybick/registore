@@ -1,101 +1,88 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
-import 'dart:async'; // Future.delayed を使うためにインポート
+import '../models/sale_detail_model.dart';
+import '../models/sale_model.dart';
 
-// データベース関連の処理をまとめたサービスクラス
 class DatabaseService {
-  // シングルトンパターン: アプリ内でこのクラスのインスタンスが1つだけ生成されることを保証する
   static final DatabaseService instance =
       DatabaseService._init();
-  DatabaseService._init();
-
-  // --- ▼▼▼ ダミーデータ ▼▼▼ ---
-  // 本来はsqfliteデータベースから取得するが、現段階ではテスト用に固定リストを使用する。
-  // 商品DBインポート機能を実装する際に、実際のDB処理に置き換える。
-  final List<Product> _dummyProducts = [
-    const Product(
-      barcode: '4901881289521',
-      name: 'ノート',
-      price: 180,
-      category: '文具',
-    ),
-    const Product(
-      barcode: '4902102132279',
-      name: '綾鷹 525ml',
-      price: 150,
-      category: '飲料',
-    ),
-    const Product(
-      barcode: '4902102072124',
-      name: 'コカ・コーラ 500ml',
-      price: 160,
-      category: '飲料',
-    ),
-    const Product(
-      barcode: '4901005100829',
-      name: '江崎グリコ ポッキーチョコレート',
-      price: 162,
-      category: '菓子',
-    ),
-    const Product(
-      barcode: '4902777026197',
-      name: '明治 きのこの山',
-      price: 216,
-      category: '菓子',
-    ),
-  ];
-  // --- ▲▲▲ ダミーデータ ▲▲▲ ---
-
-  /// バーコードを元に商品を検索する (現在はダミーデータを検索)
-  ///
-  /// [barcode] 検索したい商品のバーコード
-  /// 戻り値: 見つかった場合はProductオブジェクト、見つからない場合はnullをFutureで返す
-  Future<Product?> getProductByBarcode(
-    String barcode,
-  ) async {
-    // 実際のデータベースアクセスの待ち時間をシミュレートする
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    try {
-      // ダミー商品リストから、バーコードが一致する最初の要素を検索する
-      // firstWhereは要素が見つからない場合に例外をスローする
-      final product = _dummyProducts.firstWhere(
-        (p) => p.barcode == barcode,
-      );
-      return product;
-    } catch (e) {
-      // firstWhereで例外が発生した場合 (商品が見つからなかった場合) はnullを返す
-      return null;
-    }
-  }
-
-  /// すべての商品リストを取得する (現在はダミーデータを返す)
-  Future<List<Product>> getAllProducts() async {
-    // 実際のDBアクセスの待ち時間をシミュレート
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _dummyProducts;
-  }
-
-  // --- 以下は将来のsqflite実装のためのプレースホルダ ---
-  /*
-  import 'package:sqflite/sqflite.dart';
-  import 'package:path/path.dart';
-
   static Database? _database;
+  DatabaseService._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('pos.db');
+    _database = await _initDB('pos_app.db');
     return _database!;
   }
 
-  // ... ここに _initDB, _createDB などのメソッドを実装 ...
-  
-  // sqfliteを使った実際のgetProductByBarcodeの実装例
-  Future<Product?> getProductByBarcodeFromDb(String barcode) async {
+  Future<Database> _initDB(String filePath) async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, filePath);
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
+  }
+
+  // データベースのテーブルを作成
+  Future _createDB(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE products (
+        barcode TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        category TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE sales (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        totalAmount REAL NOT NULL,
+        tenderedAmount REAL NOT NULL,
+        paymentMethod TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        isCancelled INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE sale_details (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        saleId INTEGER NOT NULL,
+        productName TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        FOREIGN KEY (saleId) REFERENCES sales (id) ON DELETE CASCADE
+      )
+    ''');
+    // ダミーの商品データを初期登録
+    _insertDummyProducts(db);
+  }
+
+  void _insertDummyProducts(Database db) {
+    final products = [
+      // ... (以前のダミーデータ) ...
+    ];
+    for (var product in products) {
+      db.insert(
+        'products',
+        product.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  }
+
+  // --- 商品関連のメソッド ---
+
+  /// バーコードで商品をDBから検索する
+  Future<Product?> getProductByBarcode(
+    String barcode,
+  ) async {
     final db = await instance.database;
     final maps = await db.query(
       'products',
-      columns: ['barcode', 'name', 'price', 'category'],
       where: 'barcode = ?',
       whereArgs: [barcode],
     );
@@ -106,5 +93,121 @@ class DatabaseService {
       return null;
     }
   }
-  */
+
+  /// すべての商品をDBから取得する
+  Future<List<Product>> getAllProducts() async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'products',
+      orderBy: 'name ASC',
+    );
+    return List.generate(
+      maps.length,
+      (i) => Product.fromMap(maps[i]),
+    );
+  }
+
+  // --- 販売履歴関連のメソッド ---
+
+  /// 販売履歴と詳細をDBにインサートする
+  Future<void> insertSale(
+    Sale sale,
+    List<CartItem> items,
+  ) async {
+    final db = await instance.database;
+    // トランザクションを使い、処理の整合性を保証する
+    await db.transaction((txn) async {
+      // 1. salesテーブルに記録を挿入し、そのIDを取得
+      final saleId = await txn.insert(
+        'sales',
+        sale.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // 2. 取得したIDを使って、各商品をsale_detailsに挿入
+      for (final item in items) {
+        final detail = SaleDetail(
+          saleId: saleId,
+          productName: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        );
+        await txn.insert(
+          'sale_details',
+          detail.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    });
+  }
+
+  /// すべての販売履歴を取得する
+  Future<List<Sale>> getSalesHistory() async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'sales',
+      orderBy: 'createdAt DESC',
+    );
+    return List.generate(
+      maps.length,
+      (i) => Sale.fromMap(maps[i]),
+    );
+  }
+
+  /// すべての販売履歴と関連する詳細を削除する
+  Future<void> deleteAllSalesHistory() async {
+    final db = await instance.database;
+    // 'sales'テーブルから全レコードを削除する。
+    // 'sale_details'はカスケード削除される。
+    await db.delete('sales');
+  }
+
+  /// 特定の販売履歴に紐づく詳細を取得する
+  Future<List<SaleDetail>> getSaleDetails(
+    int saleId,
+  ) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'sale_details',
+      where: 'saleId = ?',
+      whereArgs: [saleId],
+    );
+    return List.generate(
+      maps.length,
+      (i) => SaleDetail.fromMap(maps[i]),
+    );
+  }
+
+  /// 販売のキャンセル状態を更新する
+  Future<void> updateSaleCancellationStatus(
+    int saleId,
+    bool isCancelled,
+  ) async {
+    final db = await instance.database;
+    await db.update(
+      'sales',
+      {'isCancelled': isCancelled ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [saleId],
+    );
+  }
+
+  /// 商品リストでproductsテーブルを上書きする
+  Future<void> importProducts(
+    List<Product> products,
+  ) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      // 既存のデータをすべて削除
+      await txn.delete('products');
+      // 新しいデータを一括で挿入
+      for (final product in products) {
+        await txn.insert(
+          'products',
+          product.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    });
+  }
 }

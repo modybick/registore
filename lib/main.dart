@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/product_provider.dart';
+import 'package:registore/providers/sales_provider.dart';
 import 'providers/cart_provider.dart';
 import 'screens/cart/cart_screen.dart';
+import 'providers/settings_provider.dart';
 
 void main() {
   // runApp() の前に Flutter の機能 (DB初期化など) を呼び出す場合に必要です。
@@ -25,12 +28,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ProductProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => SalesProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(),
+        ),
       ],
       child: MaterialApp(
-        title: 'レジアプリ DEMO',
+        title: 'RegiStore',
         theme: ThemeData(
           // アプリ全体のカラーテーマを設定
           primarySwatch: Colors.teal,
+          textTheme: GoogleFonts.mPlusRounded1cTextTheme(
+            Theme.of(context).textTheme,
+          ),
           // UI要素の密度を調整
           visualDensity:
               VisualDensity.adaptivePlatformDensity,
