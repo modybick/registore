@@ -4,6 +4,7 @@ import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
 import '../models/sale_detail_model.dart';
 import '../models/sale_model.dart';
+import '../models/payment_method_model.dart';
 
 class DatabaseService {
   static final DatabaseService instance =
@@ -57,21 +58,14 @@ class DatabaseService {
         FOREIGN KEY (saleId) REFERENCES sales (id) ON DELETE CASCADE
       )
     ''');
-    // ダミーの商品データを初期登録
-    _insertDummyProducts(db);
-  }
+    await db.execute('''
+      CREATE TABLE payment_methods (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+      )
+    ''');
 
-  void _insertDummyProducts(Database db) {
-    final products = [
-      // ... (以前のダミーデータ) ...
-    ];
-    for (var product in products) {
-      db.insert(
-        'products',
-        product.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+    _insertDefaultPaymentMethods(db); //デフォルトの決済方法を挿入
   }
 
   // --- 商品関連のメソッド ---
@@ -209,5 +203,62 @@ class DatabaseService {
         );
       }
     });
+  }
+
+  // --- 決済方法関連 ---
+
+  Future<List<PaymentMethod>> getPaymentMethods() async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'payment_methods',
+      orderBy: 'id ASC',
+    );
+    return List.generate(
+      maps.length,
+      (i) => PaymentMethod.fromMap(maps[i]),
+    );
+  }
+
+  Future<void> addPaymentMethod(String name) async {
+    final db = await instance.database;
+    await db.insert(
+      'payment_methods',
+      {'name': name},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updatePaymentMethod(
+    int id,
+    String newName,
+  ) async {
+    final db = await instance.database;
+    await db.update(
+      'payment_methods',
+      {'name': newName},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> deletePaymentMethod(int id) async {
+    final db = await instance.database;
+    await db.delete(
+      'payment_methods',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  //デフォルトの決済方法を挿入
+  void _insertDefaultPaymentMethods(Database db) {
+    final defaultMethods = ['現金', 'クレジットカード', 'QRコード'];
+    for (var name in defaultMethods) {
+      db.insert(
+        'payment_methods',
+        {'name': name},
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
   }
 }

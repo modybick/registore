@@ -57,12 +57,6 @@ class _SaleDetailScreenState
     await context
         .read<SalesProvider>()
         .toggleSaleCancellation(_currentSale);
-    // 画面の表示を即時更新するために、ローカルの状態を変更
-    setState(() {
-      _currentSale = _currentSale.copyWith(
-        isCancelled: !_currentSale.isCancelled,
-      );
-    });
 
     // await の直後に、ウィジェットがまだ存在するかをチェックする
     if (!mounted) return;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/providers/payment_method_provider.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/providers/sales_provider.dart';
 import 'providers/cart_provider.dart';
@@ -33,6 +34,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => SettingsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PaymentMethodProvider(),
         ),
       ],
       child: MaterialApp(
