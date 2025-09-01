@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:registore/services/sound_service.dart';
 import '../models/cart_item_model.dart';
 import '../models/sale_model.dart';
 import '../services/database_service.dart';
@@ -9,6 +10,8 @@ class SalesProvider with ChangeNotifier {
 
   List<Sale> get sales => _sales;
   bool get isLoading => _isLoading;
+
+  final SoundService _soundService = SoundService();
 
   // 販売履歴をDBに保存する
   Future<void> addSale({
@@ -27,6 +30,7 @@ class SalesProvider with ChangeNotifier {
       newSale,
       items,
     );
+    _soundService.playCheckoutSound();
     // 保存後、リストを再読み込みする
     await loadSalesHistory();
   }

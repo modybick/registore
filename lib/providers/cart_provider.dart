@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:registore/models/sale_detail_model.dart';
+import 'package:registore/services/sound_service.dart';
 import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
 
 // ChangeNotifierをミックスインして、変更通知機能を持つクラスを作成
 class CartProvider with ChangeNotifier {
+  final SoundService _soundService = SoundService();
   // カート内の商品を管理するMap。キーはバーコード(String)、値はCartItem。
   // プライベート変数(_items)として外部から直接変更できないようにする。
   final Map<String, CartItem> _items = {};
@@ -53,6 +55,7 @@ class CartProvider with ChangeNotifier {
         ),
       );
     }
+    _soundService.playSuccessSound();
     // 状態が変更されたことをリスナー（UIなど）に通知する。
     notifyListeners();
   }
@@ -69,6 +72,7 @@ class CartProvider with ChangeNotifier {
           quantity: existing.quantity + 1,
         ),
       );
+      _soundService.playSuccessSound();
       notifyListeners();
     }
   }
@@ -93,6 +97,7 @@ class CartProvider with ChangeNotifier {
       // 商品の数量が1の場合は、カートからその商品を削除する。
       _items.remove(barcode);
     }
+    _soundService.playDecrementSound();
     notifyListeners();
   }
 

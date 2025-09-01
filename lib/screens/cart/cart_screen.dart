@@ -78,7 +78,6 @@ class _CartScreenState extends State<CartScreen> {
       );
       if (product != null) {
         cartProvider.addItem(product);
-        _soundService.playSuccessSound();
       } else {
         _soundService.playErrorSound();
         scaffoldMessenger.showSnackBar(

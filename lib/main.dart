@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/providers/sales_provider.dart';
+import 'package:registore/services/sound_service.dart';
 import 'providers/cart_provider.dart';
 import 'screens/cart/cart_screen.dart';
 import 'providers/settings_provider.dart';
@@ -11,9 +12,10 @@ import 'providers/settings_provider.dart';
 final RouteObserver<PageRoute> routeObserver =
     RouteObserver<PageRoute>();
 
-void main() {
+Future<void> main() async {
   // runApp() の前に Flutter の機能 (DB初期化など) を呼び出す場合に必要です。
   WidgetsFlutterBinding.ensureInitialized();
+  await SoundService.instance.init();
   runApp(const MyApp());
 }
 

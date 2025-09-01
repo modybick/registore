@@ -34,3 +34,4 @@ flutter:
     - assets/sounds/success.mp3
     - assets/sounds/error.mp3
     - assets/sounds/checkout.mp3
+    - assets/sounds/decrement.mp3
