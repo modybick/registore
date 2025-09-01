@@ -139,7 +139,7 @@ class _MasterDataSettingsScreenState
           ListTile(
             leading: _isImporting
                 ? const CircularProgressIndicator()
-                : const Icon(Icons.upload_file),
+                : const Icon(Icons.input),
             title: const Text('商品マスタをCSVで取り込む'),
             subtitle: const Text('既存のデータは上書きされます。'),
             onTap: _isImporting ? null : _runImport,
@@ -147,7 +147,7 @@ class _MasterDataSettingsScreenState
           ListTile(
             leading: _isProductsExporting
                 ? const CircularProgressIndicator()
-                : const Icon(Icons.save_alt),
+                : const Icon(Icons.save_as),
             title: const Text('商品マスタをCSVで保存'),
             subtitle: const Text('商品マスタをファイルに保存します。'),
             onTap: _isProductsExporting
@@ -194,7 +194,7 @@ class _MasterDataSettingsScreenState
           ListTile(
             leading: _isSalesExporting
                 ? const CircularProgressIndicator()
-                : const Icon(Icons.save_alt),
+                : const Icon(Icons.save_as),
             title: const Text('販売履歴をCSVで保存'),
             subtitle: const Text('すべての販売履歴をファイルに保存します。'),
             onTap: _isSalesExporting ? null : _runSalesSave,
