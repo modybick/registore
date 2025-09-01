@@ -9,6 +9,24 @@ class ProductProvider with ChangeNotifier {
   List<Product> get products => [..._products];
   bool get isLoading => _isLoading;
 
+  // 商品を追加
+  Future<void> addProduct(Product product) async {
+    await DatabaseService.instance.addProduct(product);
+    await reloadProducts(); // DB更新後にリストを再読み込み
+  }
+
+  // 商品を更新
+  Future<void> updateProduct(Product product) async {
+    await DatabaseService.instance.updateProduct(product);
+    await reloadProducts();
+  }
+
+  // 商品を削除
+  Future<void> deleteProduct(String barcode) async {
+    await DatabaseService.instance.deleteProduct(barcode);
+    await reloadProducts();
+  }
+
   // 商品リストからユニークなカテゴリのリストを生成するゲッター
   List<String> get categories {
     if (_products.isEmpty) {

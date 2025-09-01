@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../utils/formatter.dart';
 import '../../../providers/cart_provider.dart';
 import '../../../providers/product_provider.dart';
 
@@ -110,7 +111,7 @@ class _ProductListBottomSheetState
                         return ListTile(
                           title: Text(product.name),
                           subtitle: Text(
-                            '¥${product.price}',
+                            formatCurrency(product.price),
                           ),
                           onTap: () {
                             // 商品をカートに追加

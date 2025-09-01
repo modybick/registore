@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
+import 'package:registore/utils/formatter.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/sales_provider.dart';
 import '../../widgets/app_scaffold.dart';
@@ -197,7 +198,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         Expanded(
                           flex: 3,
                           child: Text(
-                            '¥${(item.price * item.quantity).toStringAsFixed(0)}',
+                            formatCurrency(
+                              item.price * item.quantity,
+                            ),
                             textAlign: TextAlign.right,
                           ),
                         ),
@@ -346,7 +349,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             )
           else
             Text(
-              '¥${amount?.toStringAsFixed(0) ?? '---'}',
+              formatCurrency(amount ?? 0),
               style: textStyle.copyWith(
                 color: isEmphasized ? Colors.red : null,
               ),

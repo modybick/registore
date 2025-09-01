@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/utils/formatter.dart';
 import '../../models/sale_detail_model.dart';
 import '../../models/sale_model.dart';
 import '../../services/database_service.dart';
@@ -256,7 +257,10 @@ class _SaleDetailScreenState
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        '¥${(item.price * item.quantity).toStringAsFixed(0)}',
+                                        formatCurrency(
+                                          item.price *
+                                              item.quantity,
+                                        ),
                                         textAlign:
                                             TextAlign.right,
                                       ),
@@ -339,8 +343,7 @@ class _SaleDetailScreenState
         children: [
           Text(label, style: textStyle),
           Text(
-            valueText ??
-                '¥${amount?.toStringAsFixed(0) ?? '---'}',
+            valueText ?? formatCurrency(amount ?? 0),
             style: textStyle.copyWith(
               color: isEmphasized ? Colors.red : null,
             ),

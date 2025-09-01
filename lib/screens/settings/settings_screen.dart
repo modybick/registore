@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:registore/providers/sales_provider.dart';
-import 'package:registore/screens/settings/payment_method_list_screen.dart';
+import '../../providers/sales_provider.dart';
+import '../../screens/settings/payment_method_list_screen.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/csv_service.dart';
 import '../../widgets/app_scaffold.dart';
+import '../../screens/settings/product/product_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -155,6 +156,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   );
                 }).toList(),
+              ),
+
+              const Divider(height: 30),
+
+              // --- 商品マスタの編集 ---
+              ListTile(
+                leading: const Icon(
+                  Icons.inventory_2_outlined,
+                ),
+                title: const Text(
+                  '商品マスタの編集',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: const Text('商品の追加、編集、削除を行います。'),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const ProductListScreen(),
+                    ),
+                  );
+                },
               ),
 
               const Divider(height: 30),

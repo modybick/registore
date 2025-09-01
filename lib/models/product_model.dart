@@ -10,6 +10,8 @@ class Product {
   final int price;
   // 商品カテゴリ
   final String category;
+  // 商品画像
+  final String? imagePath;
 
   // コンストラクタ
   // Productオブジェクトを作成する際に、全てのプロパティを必須とする
@@ -18,6 +20,7 @@ class Product {
     required this.name,
     required this.price,
     required this.category,
+    this.imagePath,
   });
 
   /// MapからProductオブジェクトを生成するためのファクトリコンストラクタ。
@@ -28,6 +31,7 @@ class Product {
       name: map['name'] as String,
       price: map['price'] as int,
       category: map['category'] as String,
+      imagePath: map['imagePath'] as String?,
     );
   }
 
@@ -39,6 +43,7 @@ class Product {
       'name': name,
       'price': price,
       'category': category,
+      'imagePath': imagePath,
     };
   }
 }

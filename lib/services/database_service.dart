@@ -35,7 +35,8 @@ class DatabaseService {
         barcode TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         price INTEGER NOT NULL,
-        category TEXT NOT NULL
+        category TEXT NOT NULL,
+        imagePath TEXT
       )
     ''');
     await db.execute('''
@@ -69,6 +70,37 @@ class DatabaseService {
   }
 
   // --- 商品関連のメソッド ---
+
+  // 商品をDBに追加
+  Future<void> addProduct(Product product) async {
+    final db = await instance.database;
+    await db.insert(
+      'products',
+      product.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // 商品DBを更新
+  Future<void> updateProduct(Product product) async {
+    final db = await instance.database;
+    await db.update(
+      'products',
+      product.toMap(),
+      where: 'barcode = ?',
+      whereArgs: [product.barcode],
+    );
+  }
+
+  // 商品をDBから削除
+  Future<void> deleteProduct(String barcode) async {
+    final db = await instance.database;
+    await db.delete(
+      'products',
+      where: 'barcode = ?',
+      whereArgs: [barcode],
+    );
+  }
 
   /// バーコードで商品をDBから検索する
   Future<Product?> getProductByBarcode(

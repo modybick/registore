@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/main.dart';
 import 'package:registore/screens/payment/payment_screen.dart';
 import 'package:registore/screens/sale_history/sale_histry_screen.dart';
 import 'package:registore/screens/settings/settings_screen.dart';
@@ -10,6 +11,7 @@ import '../../services/database_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_scaffold.dart';
 import 'widgets/product_list_bottom_sheet.dart';
+import '../../utils/formatter.dart';
 
 // --- 親ウィジェット ---
 class CartScreen extends StatefulWidget {
@@ -168,7 +170,7 @@ class _ScannerView extends StatefulWidget {
 }
 
 class _ScannerViewState extends State<_ScannerView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAware {
   late final MobileScannerController _controller;
   late final AnimationController _animationController;
 
@@ -186,10 +188,35 @@ class _ScannerViewState extends State<_ScannerView>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // routeObserverにこのStateを購読者として登録する
+    routeObserver.subscribe(
+      this,
+      ModalRoute.of(context)! as PageRoute,
+    );
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _controller.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  /// 他の画面がこの画面の上にプッシュされたときに呼ばれる
+  @override
+  void didPushNext() {
+    // カメラを停止する
+    _controller.stop();
+  }
+
+  /// この画面が再び表示されるようになったときに呼ばれる (上の画面がpopされたとき)
+  @override
+  void didPopNext() {
+    // カメラを再開する
+    _controller.start();
   }
 
   @override
@@ -263,7 +290,7 @@ class _CartListView extends StatelessWidget {
               child: ListTile(
                 title: Text(item.name),
                 subtitle: Text(
-                  '単価: ¥${item.price.toStringAsFixed(0)}',
+                  '単価: ${formatCurrency(item.price)}',
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -358,7 +385,7 @@ class _ControlPanel extends StatelessWidget {
                   bottom: 12.0,
                 ),
                 child: Text(
-                  '合計: ¥${cart.totalAmount.toStringAsFixed(0)}',
+                  '合計: ${formatCurrency(cart.totalAmount)}',
                   style: Theme.of(
                     context,
                   ).textTheme.headlineSmall,

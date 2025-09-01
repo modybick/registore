@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/utils/formatter.dart';
 import '../../providers/sales_provider.dart';
 import '../../widgets/app_scaffold.dart';
 import 'sale_detail_screen.dart';
@@ -238,7 +239,7 @@ class _SalesHistoryScreenState
                   style: textStyle,
                 ),
                 trailing: Text(
-                  '¥${sale.totalAmount.toStringAsFixed(0)}',
+                  formatCurrency(sale.totalAmount),
                   style: amountStyle,
                 ),
                 onTap: () {
