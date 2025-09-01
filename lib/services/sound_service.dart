@@ -22,7 +22,7 @@ class SoundService {
   );
 
   final AudioPlayer _checkoutPlayer = AudioPlayer(
-    playerId: 'chekout',
+    playerId: 'checkout',
   );
 
   final AudioPlayer _decrementPlayer = AudioPlayer(
@@ -32,6 +32,13 @@ class SoundService {
   /// アプリ起動時に一度だけ呼び出し、音声をメモリにロードする
   /// このメソッドはmain()関数から呼び出す
   Future<void> init() async {
+    await AudioCache.instance.loadAll([
+      'sounds/success.mp3',
+      'sounds/error.mp3',
+      'sounds/checkout.mp3',
+      'sounds/decrement.mp3',
+    ]);
+
     // PlayerModeを設定して、再生遅延を最小化する
     await _successPlayer.setPlayerMode(
       PlayerMode.lowLatency,
