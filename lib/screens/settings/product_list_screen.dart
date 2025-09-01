@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../utils/formatter.dart';
-import '../../../models/product_model.dart';
-import '../../../providers/product_provider.dart';
-import '../../../widgets/app_scaffold.dart';
+import '../../utils/formatter.dart';
+import '../../models/product_model.dart';
+import '../../providers/product_provider.dart';
+import '../../widgets/app_scaffold.dart';
 import 'product_edit_screen.dart';
 
 class ProductListScreen extends StatefulWidget {

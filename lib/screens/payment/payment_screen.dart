@@ -76,6 +76,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         const SnackBar(
           content: Text('支払方法を選択してください'),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
       );
       return;

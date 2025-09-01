@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/settings_provider.dart';
-import '../../../services/sound_service.dart';
-import '../../../models/product_model.dart';
-import '../../../providers/product_provider.dart';
-import '../../../widgets/app_scaffold.dart';
-import '../../../utils/currency_input_formatter.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/sound_service.dart';
+import '../../models/product_model.dart';
+import '../../providers/product_provider.dart';
+import '../../widgets/app_scaffold.dart';
+import '../../utils/currency_input_formatter.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final Product? product; // nullなら新規登録、nullでなければ編集

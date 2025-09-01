@@ -138,6 +138,7 @@ class _PaymentMethodListScreenState
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('「${method.name}」を削除しました'),
+                  duration: Duration(seconds: 3),
                 ),
               );
             },
