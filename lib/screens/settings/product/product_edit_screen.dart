@@ -121,6 +121,7 @@ class _ProductEditScreenState
             height: 400, // ダイアログ内のスキャナのサイズ
             child: MobileScanner(
               controller: scannerController,
+              scanWindow: Rect.fromLTWH(0, 0, 300, 400),
               // ProductEditScreen専用のシンプルなコールバックを渡す
               onDetect: (capture) {
                 // 1. 検出されたバーコードの値を取得

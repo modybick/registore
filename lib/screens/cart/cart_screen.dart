@@ -206,29 +206,48 @@ class _ScannerViewState extends State<_ScannerView>
     super.dispose();
   }
 
+  @override
+  void didPush() {
+    _startCamera();
+  }
+
+  @override
+  void didPopNext() {
+    _startCamera();
+  }
+
   /// 他の画面がこの画面の上にプッシュされたときに呼ばれる
   @override
   void didPushNext() {
     // カメラを停止する
-    _controller.stop();
+    _stopCamera();
   }
 
-  /// この画面が再び表示されるようになったときに呼ばれる (上の画面がpopされたとき)
   @override
-  void didPopNext() {
-    // カメラを再開する
-    _controller.start();
+  void didPop() {
+    _stopCamera();
+  }
+
+  // カメラの起動/停止を安全に行うヘルパーメソッド
+  void _startCamera() {
+    // カートスクリーンが開かれている時だけカメラが起動
+    final bool isTopScreen =
+        ModalRoute.of(context)?.isCurrent ?? false;
+    if (!_controller.value.isRunning && isTopScreen) {
+      _controller.start();
+    }
+  }
+
+  void _stopCamera() {
+    // カートスクリーンが開かれている時だけカメラが起動
+    if (_controller.value.isRunning) {
+      _controller.stop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // カートスクリーンが開かれている時だけカメラが起動
-    final bool isTopScreen =
-        ModalRoute.of(context)?.isCurrent ?? false;
-    if (isTopScreen) {
-      _controller.start();
-    }
-
     return SizedBox(
       height: 150,
       child: Stack(
@@ -393,7 +412,7 @@ class _ControlPanel extends StatelessWidget {
                   bottom: 12.0,
                 ),
                 child: Text(
-                  '合計: ¥${cart.totalAmount.toStringAsFixed(0)}',
+                  '合計: ${formatCurrency(cart.totalAmount)}',
                   style: Theme.of(
                     context,
                   ).textTheme.headlineSmall,
