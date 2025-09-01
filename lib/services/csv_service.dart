@@ -167,4 +167,61 @@ class CsvService {
       return '保存中にエラーが発生しました: ${e.toString()}';
     }
   }
+
+  /// 商品マスタリストをCSVファイルとしてデバイスに保存する
+  /// 戻り値: 処理結果のメッセージ
+  Future<String> saveProductsAsCsv(
+    List<Product> products,
+  ) async {
+    if (products.isEmpty) {
+      return 'エクスポート対象の商品がありません。';
+    }
+
+    try {
+      // 1. CSVデータのヘッダー行を作成
+      // インポート機能とフォーマットを合わせるのが重要
+      List<List<dynamic>> rows = [];
+      rows.add(['barcode', 'name', 'price', 'category']);
+
+      // 2. 各商品をCSVの行に変換
+      for (final product in products) {
+        rows.add([
+          product.barcode,
+          product.name,
+          product.price,
+          product.category,
+        ]);
+      }
+
+      // 3. CSV文字列に変換
+      final String csv = const ListToCsvConverter().convert(
+        rows,
+      );
+
+      // 4. CSV文字列をバイトデータ(Uint8List)に変換
+      final Uint8List bytes = utf8.encode(csv);
+
+      // 5. ファイル保存ダイアログを開く
+      final String defaultFileName =
+          'product_master_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.csv';
+
+      final String? outputPath = await FilePicker.platform
+          .saveFile(
+            dialogTitle: '商品マスタを保存',
+            fileName: defaultFileName,
+            type: FileType.custom,
+            allowedExtensions: ['csv'],
+            bytes: bytes,
+          );
+
+      // 6. 結果を判定
+      if (outputPath != null) {
+        return '商品マスタの保存に成功しました。';
+      } else {
+        return 'ファイルの保存がキャンセルされました。';
+      }
+    } catch (e) {
+      return '保存中にエラーが発生しました: ${e.toString()}';
+    }
+  }
 }

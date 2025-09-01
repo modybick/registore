@@ -17,9 +17,10 @@ class MasterDataSettingsScreen extends StatefulWidget {
 
 class _MasterDataSettingsScreenState
     extends State<MasterDataSettingsScreen> {
-  // CSV関連のロジックをこの画面に移動
+  // 処理ステータス
   bool _isImporting = false;
-  bool _isExporting = false;
+  bool _isSalesExporting = false;
+  bool _isProductsExporting = false;
   final CsvService _csvService = CsvService();
 
   // CSVインポート処理
@@ -52,10 +53,10 @@ class _MasterDataSettingsScreenState
     }
   }
 
-  // CSVを保存
+  // 販売履歴CSVを保存
   Future<void> _runSalesSave() async {
     setState(() {
-      _isExporting = true;
+      _isSalesExporting = true;
     });
 
     final salesProvider = context.read<SalesProvider>();
@@ -74,7 +75,34 @@ class _MasterDataSettingsScreenState
         ),
       );
       setState(() {
-        _isExporting = false;
+        _isSalesExporting = false;
+      });
+    }
+  }
+
+  // 商品マスタをCSV保存
+  Future<void> _runProductsSave() async {
+    setState(() {
+      _isProductsExporting = true;
+    });
+
+    final productProvider = context.read<ProductProvider>();
+    if (productProvider.products.isEmpty) {
+      await productProvider.loadProducts();
+    }
+    // 新しい保存メソッドを呼び出す
+    final resultMessage = await _csvService
+        .saveProductsAsCsv(productProvider.products);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(resultMessage),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      setState(() {
+        _isProductsExporting = false;
       });
     }
   }
@@ -116,6 +144,16 @@ class _MasterDataSettingsScreenState
             subtitle: const Text('既存のデータは上書きされます。'),
             onTap: _isImporting ? null : _runImport,
           ),
+          ListTile(
+            leading: _isProductsExporting
+                ? const CircularProgressIndicator()
+                : const Icon(Icons.save_alt),
+            title: const Text('商品マスタをCSVで保存'),
+            subtitle: const Text('商品マスタをファイルに保存します。'),
+            onTap: _isProductsExporting
+                ? null
+                : _runProductsSave,
+          ),
           const Divider(height: 30),
 
           // --- 決済方法マスタ ---
@@ -154,12 +192,12 @@ class _MasterDataSettingsScreenState
             ),
           ),
           ListTile(
-            leading: _isExporting
+            leading: _isSalesExporting
                 ? const CircularProgressIndicator()
                 : const Icon(Icons.save_alt),
             title: const Text('販売履歴をCSVで保存'),
             subtitle: const Text('すべての販売履歴をファイルに保存します。'),
-            onTap: _isExporting ? null : _runSalesSave,
+            onTap: _isSalesExporting ? null : _runSalesSave,
           ),
         ],
       ),
