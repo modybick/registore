@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/formatter.dart';
@@ -15,34 +14,14 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState
-    extends State<ProductListScreen>
-    with SingleTickerProviderStateMixin {
-  TabController? _tabController;
+    extends State<ProductListScreen> {
+  late Future<void> _loadProductsFuture;
   @override
   void initState() {
     super.initState();
-    // 画面初期化時に商品リストをロードする
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<ProductProvider>();
-      provider.reloadProducts().then((_) {
-        // データロードが完了した後に、カテゴリ数をもとにTabControllerを初期化
-        if (mounted) {
-          setState(() {
-            _tabController = TabController(
-              length: provider.categories.length,
-              vsync: this,
-            );
-          });
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    // 4. Controllerを必ず破棄する
-    _tabController?.dispose();
-    super.dispose();
+    _loadProductsFuture = context
+        .read<ProductProvider>()
+        .reloadProducts();
   }
 
   // 削除確認ダイアログ
@@ -93,100 +72,129 @@ class _ProductListScreenState
         },
         child: const Icon(Icons.add),
       ),
-      body: Consumer<ProductProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      body: FutureBuilder(
+        future: _loadProductsFuture,
+        builder: (context, snapshot) {
+          // --- 非同期処理が実行中の場合 ---
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
-          if (provider.products.isEmpty) {
-            return const Center(
-              child: Text('商品が登録されていません。'),
+          // --- エラーが発生した場合 ---
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('エラーが発生しました: ${snapshot.error}'),
             );
           }
 
-          return Column(
-            children: [
-              TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabs: provider.categories
-                    .map((category) => Tab(text: category))
-                    .toList(),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: provider.categories.map((
-                    category,
-                  ) {
-                    // カテゴリごとに商品をフィルタリング
-                    final products = provider
-                        .getProductsByCategory(category);
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return Card(
-                          margin:
-                              const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 4.0,
-                              ),
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.image_outlined,
-                              size: 40,
-                              color: Colors.grey,
+          // --- 正常に完了した場合、ConsumerでProviderの状態を描画 ---
+          // この時点では、Providerにデータがロード済みであることが保証されている
+          return Consumer<ProductProvider>(
+            builder: (context, provider, child) {
+              if (provider.products.isEmpty) {
+                return const Center(
+                  child: Text('商品が登録されていません。'),
+                );
+              }
+              // ▼▼▼ 4. DefaultTabControllerでTabの管理をシンプルにする ▼▼▼
+              return DefaultTabController(
+                length: provider
+                    .categories
+                    .length, // Providerから取得した正しいタブ数を設定
+                child: Column(
+                  children: [
+                    TabBar(
+                      isScrollable: true,
+                      tabs: provider.categories
+                          .map(
+                            (category) =>
+                                Tab(text: category),
+                          )
+                          .toList(),
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: provider.categories.map((
+                          category,
+                        ) {
+                          final products = provider
+                              .getProductsByCategory(
+                                category,
+                              );
+                          return ListView.builder(
+                            padding: const EdgeInsets.all(
+                              8.0,
                             ),
-                            title: Text(product.name),
-                            subtitle: Text(
-                              '¥${product.price} / ${product.category}',
-                            ),
-                            trailing: Row(
-                              mainAxisSize:
-                                  MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    color: Colors.blue,
+                            itemCount: products.length,
+                            itemBuilder: (context, index) {
+                              final product =
+                                  products[index];
+                              return Card(
+                                margin:
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 4.0,
+                                    ),
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.image_outlined,
+                                    size: 40,
+                                    color: Colors.grey,
                                   ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            ProductEditScreen(
-                                              product:
-                                                  product,
+                                  title: Text(product.name),
+                                  subtitle: Text(
+                                    '${formatCurrency(product.price)} / ${product.category}',
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize:
+                                        MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons
+                                              .edit_outlined,
+                                          color:
+                                              Colors.blue,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  ProductEditScreen(
+                                                    product:
+                                                        product,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons
+                                              .delete_outline,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () =>
+                                            _showDeleteConfirmation(
+                                              product,
                                             ),
                                       ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.red,
+                                    ],
                                   ),
-                                  onPressed: () =>
-                                      _showDeleteConfirmation(
-                                        product,
-                                      ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           );
         },
       ),
