@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/main.dart';
-import 'package:registore/screens/payment/payment_screen.dart';
-import 'package:registore/screens/sale_history/sale_histry_screen.dart';
-import 'package:registore/screens/settings/settings_screen.dart';
+import '../../screens/payment/payment_screen.dart';
+import '../../screens/sale_history/sale_histry_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+import '../../utils/formatter.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_scaffold.dart';
 import 'widgets/product_list_bottom_sheet.dart';
-import '../../utils/formatter.dart';
 
 // --- 親ウィジェット ---
 class CartScreen extends StatefulWidget {
@@ -180,6 +180,7 @@ class _ScannerViewState extends State<_ScannerView>
     // initStateで、親から渡された初期フォーマットでコントローラーを生成
     _controller = MobileScannerController(
       formats: widget.formats,
+      autoStart: false,
     );
     _animationController = AnimationController(
       vsync: this,
@@ -221,6 +222,13 @@ class _ScannerViewState extends State<_ScannerView>
 
   @override
   Widget build(BuildContext context) {
+    // カートスクリーンが開かれている時だけカメラが起動
+    final bool isTopScreen =
+        ModalRoute.of(context)?.isCurrent ?? false;
+    if (isTopScreen) {
+      _controller.start();
+    }
+
     return SizedBox(
       height: 150,
       child: Stack(
@@ -385,7 +393,7 @@ class _ControlPanel extends StatelessWidget {
                   bottom: 12.0,
                 ),
                 child: Text(
-                  '合計: ${formatCurrency(cart.totalAmount)}',
+                  '合計: ¥${cart.totalAmount.toStringAsFixed(0)}',
                   style: Theme.of(
                     context,
                   ).textTheme.headlineSmall,

@@ -7,6 +7,7 @@ import '../../providers/settings_provider.dart';
 import '../../services/csv_service.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../screens/settings/product/product_list_screen.dart';
+import '../../widgets/radio_group.dart' as rg;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -77,12 +78,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // SettingsProviderを監視
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
-        // ラジオボタンの選択肢をデータとして定義 (タイトル: 値)
-        final barcodeOptions = {
-          '1次元バーコードのみ (JANコードなど)': BarcodeScanType.oneD,
-          '2次元バーコードのみ (QRコードなど)': BarcodeScanType.twoD,
-          '両方を読み取る': BarcodeScanType.both,
-        };
         return AppScaffold(
           appBar: AppBar(title: const Text('設定')),
           body: ListView(
@@ -130,32 +125,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(height: 30),
 
               // --- バーコード種別設定 ---
-              const ListTile(
-                leading: Icon(Icons.barcode_reader),
-                title: Text(
-                  '読み取り対象バーコード',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+              rg.RadioGroup<BarcodeScanType>(
+                title: '読み取り対象バーコード',
+                icon: Icons.barcode_reader,
+                groupValue: settings.barcodeScanType,
+                onChanged: (BarcodeScanType? value) {
+                  if (value != null) {
+                    settings.updateBarcodeScanType(value);
+                  }
+                },
+                options: const [
+                  rg.RadioOption(
+                    title: '1次元バーコードのみ (JANコードなど)',
+                    value: BarcodeScanType.oneD,
                   ),
-                ),
-              ),
-              Column(
-                children: barcodeOptions.entries.map((
-                  entry,
-                ) {
-                  return RadioListTile<BarcodeScanType>(
-                    title: Text(entry.key),
-                    value: entry.value,
-                    groupValue: settings.barcodeScanType,
-                    onChanged: (BarcodeScanType? value) {
-                      if (value != null) {
-                        settings.updateBarcodeScanType(
-                          value,
-                        );
-                      }
-                    },
-                  );
-                }).toList(),
+
+                  rg.RadioOption(
+                    title: '2次元バーコードのみ (QRコードなど)',
+                    value: BarcodeScanType.twoD,
+                  ),
+                  rg.RadioOption(
+                    title: '両方を読み取る',
+                    value: BarcodeScanType.both,
+                  ),
+                ],
               ),
 
               const Divider(height: 30),
