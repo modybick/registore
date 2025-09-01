@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/formatter.dart';
@@ -14,15 +15,37 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState
-    extends State<ProductListScreen> {
+    extends State<ProductListScreen>
+    with SingleTickerProviderStateMixin {
+  TabController? _tabController;
   @override
   void initState() {
     super.initState();
+    // 画面初期化時に商品リストをロードする
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductProvider>().reloadProducts();
+      final provider = context.read<ProductProvider>();
+      provider.reloadProducts().then((_) {
+        // データロードが完了した後に、カテゴリ数をもとにTabControllerを初期化
+        if (mounted) {
+          setState(() {
+            _tabController = TabController(
+              length: provider.categories.length,
+              vsync: this,
+            );
+          });
+        }
+      });
     });
   }
 
+  @override
+  void dispose() {
+    // 4. Controllerを必ず破棄する
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  // 削除確認ダイアログ
   void _showDeleteConfirmation(Product product) {
     showDialog(
       context: context,
@@ -82,61 +105,88 @@ class _ProductListScreenState
               child: Text('商品が登録されていません。'),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: provider.products.length,
-            itemBuilder: (context, index) {
-              final product = provider.products[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 4.0,
-                ),
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.image,
-                    size: 40,
-                  ), // ダミー画像
-                  title: Text(product.name),
-                  subtitle: Text(
-                    '${formatCurrency(product.price)} / ${product.category}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.blue,
-                        ),
-                        onPressed: () {
-                          // 商品データを渡す = 編集モードで編集画面に遷移
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ProductEditScreen(
-                                    product: product,
+
+          return Column(
+            children: [
+              TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabs: provider.categories
+                    .map((category) => Tab(text: category))
+                    .toList(),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: provider.categories.map((
+                    category,
+                  ) {
+                    // カテゴリごとに商品をフィルタリング
+                    final products = provider
+                        .getProductsByCategory(category);
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return Card(
+                          margin:
+                              const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 4.0,
+                              ),
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.image_outlined,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                            title: Text(product.name),
+                            subtitle: Text(
+                              '¥${product.price} / ${product.category}',
+                            ),
+                            trailing: Row(
+                              mainAxisSize:
+                                  MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    color: Colors.blue,
                                   ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            ProductEditScreen(
+                                              product:
+                                                  product,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () =>
+                                      _showDeleteConfirmation(
+                                        product,
+                                      ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                        ),
-                        onPressed: () =>
-                            _showDeleteConfirmation(
-                              product,
-                            ),
-                      ),
-                    ],
-                  ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
