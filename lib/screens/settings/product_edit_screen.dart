@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:registore/screens/settings/unique_barcode_async_validator.dart';
 import 'package:registore/utils/currency_input_formatter.dart';
 import 'package:registore/utils/currency_value_accessor.dart';
-import '../../providers/settings_provider.dart';
-import '../../services/sound_service.dart';
-import '../../models/product_model.dart';
-import '../../providers/product_provider.dart';
-import '../../widgets/app_scaffold.dart';
+import 'package:registore/providers/settings_provider.dart';
+import 'package:registore/services/sound_service.dart';
+import 'package:registore/models/product_model.dart';
+import 'package:registore/providers/product_provider.dart';
+import 'package:registore/widgets/app_scaffold.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 class ProductEditScreen extends StatefulWidget {
