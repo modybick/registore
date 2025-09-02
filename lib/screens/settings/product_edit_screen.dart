@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/screens/settings/unique_barcode_async_validator.dart';
+import 'package:registore/utils/currency_input_formatter.dart';
+import 'package:registore/utils/currency_value_accessor.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/sound_service.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/app_scaffold.dart';
-import '../../utils/currency_input_formatter.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final Product? product; // nullなら新規登録、nullでなければ編集
@@ -18,14 +21,7 @@ class ProductEditScreen extends StatefulWidget {
 
 class _ProductEditScreenState
     extends State<ProductEditScreen> {
-  // Formの状態を管理するためのキー
-  final _formKey = GlobalKey<FormState>();
-
-  // 各TextFormFieldを制御するためのコントローラー
-  late final TextEditingController _barcodeController;
-  late final TextEditingController _nameController;
-  late final TextEditingController _priceController;
-  late final TextEditingController _categoryController;
+  late final FormGroup form;
 
   // 編集モードかどうかを判定するフラグ
   late bool _isEditing;
@@ -38,66 +34,69 @@ class _ProductEditScreenState
     super.initState();
     _isEditing = widget.product != null;
 
-    // 編集モードなら初期値を設定、新規登録なら空文字を設定
-    _barcodeController = TextEditingController(
-      text: _isEditing ? widget.product!.barcode : '',
-    );
-    _nameController = TextEditingController(
-      text: _isEditing ? widget.product!.name : '',
-    );
-    _priceController = TextEditingController(
-      text: _isEditing
-          ? CurrencyInputFormatter()
-                .formatEditUpdate(
-                  TextEditingValue.empty,
-                  TextEditingValue(
-                    text: widget.product!.price.toString(),
-                  ),
-                )
-                .text
-          : '',
-    );
-    _categoryController = TextEditingController(
-      text: _isEditing ? widget.product!.category : '',
-    );
     // _imagePath = _isEditing ? widget.product!.imagePath : null;
+
+    // フォームの構造とバリデーションルールを定義
+    form = FormGroup({
+      'barcode': FormControl<String>(
+        value: _isEditing ? widget.product!.barcode : '',
+        validators: [Validators.required],
+        // 新規登録モードの場合のみ、非同期バリデーターを適用
+        asyncValidators: _isEditing
+            ? []
+            : [UniqueBarcodeAsyncValidator()],
+      ),
+      'name': FormControl<String>(
+        value: _isEditing ? widget.product!.name : '',
+        validators: [Validators.required],
+      ),
+      'price': FormControl<int>(
+        value: _isEditing ? widget.product!.price : null,
+        validators: [
+          Validators.required,
+          Validators.number(),
+        ],
+      ),
+      'category': FormControl<String>(
+        value: _isEditing ? widget.product!.category : '',
+        validators: [Validators.required],
+      ),
+    });
+
+    // 編集モードではバーコード入力欄を無効化
+    if (_isEditing) {
+      form.control('barcode').markAsDisabled();
+    }
   }
 
   @override
   void dispose() {
-    _barcodeController.dispose();
-    _nameController.dispose();
-    _priceController.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
   // フォームを保存する処理
   Future<void> _saveForm() async {
-    if (_formKey.currentState!.validate()) {
-      final priceString = _priceController.text.replaceAll(
-        ',',
-        '',
-      );
-      final newProduct = Product(
-        barcode: _barcodeController.text.trim(),
-        name: _nameController.text.trim(),
-        price: int.parse(priceString),
-        category: _categoryController.text.trim(),
-        // imagePath: _imagePath,
-      );
-
-      final provider = context.read<ProductProvider>();
-
-      // 編集モードか新規登録モードかで呼び出すメソッドを切り替え
-      if (_isEditing) {
-        await provider.updateProduct(newProduct);
-      } else {
-        await provider.addProduct(newProduct);
-      }
-
-      if (mounted) Navigator.pop(context);
+    if (form.invalid) {
+      // フォームが無効な場合は、すべてのフィールドに触れたことにしてエラーを表示
+      form.markAllAsTouched();
+      return;
     }
+
+    final newProduct = Product(
+      barcode: form.control('barcode').value,
+      name: form.control('name').value,
+      price: form.control('price').value,
+      category: form.control('category').value,
+    );
+
+    final provider = context.read<ProductProvider>();
+    if (_isEditing) {
+      await provider.updateProduct(newProduct);
+    } else {
+      await provider.addProduct(newProduct);
+    }
+
+    if (mounted) Navigator.pop(context);
   }
 
   void _showBarcodeScannerDialog() {
@@ -130,9 +129,11 @@ class _ProductEditScreenState
 
                 if (barcodeValue != null &&
                     barcodeValue.isNotEmpty) {
-                  // 2. テキストフィールドに値をセットする
                   soundService.playSuccessSound();
-                  _barcodeController.text = barcodeValue;
+
+                  // 2. テキストフィールドに値をセットする
+                  form.control('barcode').value =
+                      barcodeValue;
 
                   // 3. ダイアログを閉じる
                   Navigator.pop(dialogContext);
@@ -198,10 +199,10 @@ class _ProductEditScreenState
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: ReactiveForm(
+        formGroup: form,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -224,9 +225,9 @@ class _ProductEditScreenState
               const SizedBox(height: 24),
 
               // --- 入力フォーム ---
-              TextFormField(
+              ReactiveTextField<String>(
+                formControlName: 'barcode',
                 readOnly: _isEditing,
-                controller: _barcodeController,
                 decoration: InputDecoration(
                   labelText: _isEditing
                       ? 'バーコード（編集不可）'
@@ -241,68 +242,55 @@ class _ProductEditScreenState
                           icon: const Icon(
                             Icons.qr_code_scanner,
                           ),
-
                           onPressed:
                               _showBarcodeScannerDialog,
                         ),
                 ),
-                validator: (value) =>
-                    (value == null || value.isEmpty)
-                    ? '必須項目です'
-                    : null,
+                validationMessages: {
+                  'required': (error) => '必須項目です',
+                  'unique': (error) => 'このバーコードは既に使用されています',
+                },
+                // ユーザーの入力が終わったタイミングで非同期バリデーションをトリガー
+                showErrors: (control) =>
+                    control.invalid && control.touched,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _nameController,
+              ReactiveTextField<String>(
+                formControlName: 'name',
                 decoration: const InputDecoration(
                   labelText: '商品名',
                   prefixIcon: Icon(Icons.label),
                 ),
-                validator: (value) =>
-                    (value == null || value.isEmpty)
-                    ? '必須項目です'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: '価格',
-                  prefixIcon: Icon(Icons.currency_yen),
-                  suffixText: '円',
-                ),
-                keyboardType: TextInputType.number,
-                // 数字のみ入力を許可する
-                inputFormatters: [
-                  // 数字のみ許可するFormatterは不要になる
-                  // FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(), // 作成したカスタムフォーマッタを適用
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '必須項目です';
-                  }
-                  // バリデーション時もカンマを削除してからチェックする
-                  final price = int.tryParse(
-                    value.replaceAll(',', ''),
-                  );
-                  if (price == null) {
-                    return '数値を入力してください';
-                  }
-                  return null;
+                validationMessages: {
+                  'required': (error) => '必須項目です',
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _categoryController,
+              ReactiveTextField<int>(
+                formControlName: 'price',
+                valueAccessor: CurrencyValueAccessor(),
+                inputFormatters: [CurrencyInputFormatter()],
+                decoration: const InputDecoration(
+                  labelText: '価格',
+                  prefixIcon: Icon(Icons.sell),
+                  suffixText: '円',
+                ),
+                keyboardType: TextInputType.number,
+                validationMessages: {
+                  'required': (error) => '必須項目です',
+                  'number': (error) => '数値を入力してください',
+                },
+              ),
+              const SizedBox(height: 16),
+              ReactiveTextField<String>(
+                formControlName: 'category',
                 decoration: const InputDecoration(
                   labelText: 'カテゴリ',
                   prefixIcon: Icon(Icons.category),
                 ),
-                validator: (value) =>
-                    (value == null || value.isEmpty)
-                    ? '必須項目です'
-                    : null,
+                validationMessages: {
+                  'required': (error) => '必須項目です',
+                },
               ),
               const SizedBox(height: 40),
 

@@ -77,7 +77,7 @@ class DatabaseService {
     await db.insert(
       'products',
       product.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.fail,
     );
   }
 
@@ -118,6 +118,19 @@ class DatabaseService {
     } else {
       return null;
     }
+  }
+
+  /// 指定されたバーコードの商品が既に存在するかをチェックする
+  Future<bool> productExists(String barcode) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'products',
+      columns: ['barcode'],
+      where: 'barcode = ?',
+      whereArgs: [barcode],
+      limit: 1, // 1件見つかれば十分なので、検索を効率化
+    );
+    return maps.isNotEmpty;
   }
 
   /// すべての商品をDBから取得する
