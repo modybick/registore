@@ -379,6 +379,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     decoration: const InputDecoration(
                       hintText: '金額を入力',
                     ),
+                    onSubmitted: (value) {
+                      final FocusScopeNode currentScope =
+                          FocusScope.of(context);
+                      if (!currentScope.hasPrimaryFocus &&
+                          currentScope.hasFocus) {
+                        FocusManager.instance.primaryFocus!
+                            .unfocus();
+                      }
+                    },
                   ),
                 ),
                 // onSameAmountPressedが渡された場合のみボタンを表示
