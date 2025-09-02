@@ -15,13 +15,31 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState
     extends State<ProductListScreen> {
-  late Future<void> _loadProductsFuture;
+  // Futureをnullable(?)にして、初期状態を許容する
+  Future<void>? _loadProductsFuture;
+
   @override
   void initState() {
     super.initState();
-    _loadProductsFuture = context
-        .read<ProductProvider>()
-        .reloadProducts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 最初のフレームが描画された後に、安全にデータロードを開始する
+      // setStateを使ってFutureBuilderにFutureがセットされたことを通知する
+      setState(() {
+        _loadProductsFuture = context
+            .read<ProductProvider>()
+            .reloadProducts();
+      });
+    });
+  }
+
+  // 編集/追加画面から戻ってきたときにリストをリフレッシュする
+  void _refreshList() {
+    setState(() {
+      _loadProductsFuture = Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      ).reloadProducts();
+    });
   }
 
   // 削除確認ダイアログ
@@ -42,13 +60,14 @@ class _ProductListScreenState
             ),
             child: const Text('削除'),
             onPressed: () async {
-              await context
-                  .read<ProductProvider>()
-                  .deleteProduct(product.barcode);
-              if (mounted) {
-                // ダイアログ閉じる
-                Navigator.of(context).pop();
-              }
+              final provider = Provider.of<ProductProvider>(
+                context,
+                listen: false,
+              );
+              await provider.deleteProduct(product.barcode);
+              if (mounted) Navigator.pop(ctx);
+              // 削除後もリストをリフレッシュ
+              _refreshList();
             },
           ),
         ],
@@ -68,7 +87,7 @@ class _ProductListScreenState
             MaterialPageRoute(
               builder: (_) => const ProductEditScreen(),
             ),
-          );
+          ).then((_) => _refreshList());
         },
         child: const Icon(Icons.add),
       ),
@@ -76,8 +95,11 @@ class _ProductListScreenState
         future: _loadProductsFuture,
         builder: (context, snapshot) {
           // --- 非同期処理が実行中の場合 ---
+          // Futureがまだセットされていない、または実行中の場合はスピナーを表示
           if (snapshot.connectionState ==
-              ConnectionState.waiting) {
+                  ConnectionState.none ||
+              snapshot.connectionState ==
+                  ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -89,8 +111,7 @@ class _ProductListScreenState
             );
           }
 
-          // --- 正常に完了した場合、ConsumerでProviderの状態を描画 ---
-          // この時点では、Providerにデータがロード済みであることが保証されている
+          // データロード完了後、ConsumerでUIを描画
           return Consumer<ProductProvider>(
             builder: (context, provider, child) {
               if (provider.products.isEmpty) {
@@ -168,7 +189,11 @@ class _ProductListScreenState
                                                         product,
                                                   ),
                                             ),
+                                          ).then(
+                                            (_) =>
+                                                _refreshList(),
                                           );
+                                          ;
                                         },
                                       ),
                                       IconButton(

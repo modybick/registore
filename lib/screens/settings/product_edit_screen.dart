@@ -10,6 +10,7 @@ import 'package:registore/models/product_model.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/widgets/app_scaffold.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:uuid/uuid.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final Product? product; // nullなら新規登録、nullでなければ編集
@@ -32,12 +33,14 @@ class _ProductEditScreenState
   @override
   void initState() {
     super.initState();
+
     _isEditing = widget.product != null;
 
     // _imagePath = _isEditing ? widget.product!.imagePath : null;
 
     // フォームの構造とバリデーションルールを定義
     form = FormGroup({
+      'isBarcodeLess': FormControl<bool>(value: false),
       'barcode': FormControl<String>(
         value: _isEditing ? widget.product!.barcode : '',
         validators: [Validators.required],
@@ -66,6 +69,35 @@ class _ProductEditScreenState
     // 編集モードではバーコード入力欄を無効化
     if (_isEditing) {
       form.control('barcode').markAsDisabled();
+    } else {
+      // --- ▼▼▼ チェックボックスの状態に応じてバーコード欄を制御するリスナーを追加 ▼▼▼ ---
+      final isBarcodeLessControl =
+          form.control('isBarcodeLess')
+              as FormControl<bool>;
+      final barcodeControl = form.control('barcode');
+
+      // 初期状態を設定
+      if (isBarcodeLessControl.value ?? false) {
+        barcodeControl.markAsDisabled();
+        barcodeControl.setValidators([]); // バリデーターを解除
+      }
+
+      // チェックボックスの値が変更されたら、バーコード欄の状態を更新
+      isBarcodeLessControl.valueChanges.listen((
+        isBarcodeLess,
+      ) {
+        if (isBarcodeLess ?? false) {
+          barcodeControl.markAsDisabled(); // 無効化
+          barcodeControl.setValidators([]); // バリデーターを解除
+          barcodeControl.updateValueAndValidity(); // 状態を更新
+        } else {
+          barcodeControl.markAsEnabled(); // 有効化
+          barcodeControl.setValidators([
+            Validators.required,
+          ]); // バリデーターを再設定
+          barcodeControl.updateValueAndValidity(); // 状態を更新
+        }
+      });
     }
   }
 
@@ -82,8 +114,22 @@ class _ProductEditScreenState
       return;
     }
 
+    // --- ▼▼▼ 保存時のバーコード生成ロジックを追加 ▼▼▼ ---
+    String barcodeValue;
+    final isBarcodeLess =
+        form.control('isBarcodeLess').value as bool;
+
+    if (!_isEditing && isBarcodeLess) {
+      // 新規登録かつ「バーコードなし」がONの場合、UUIDを生成
+      Uuid uuid = Uuid();
+      barcodeValue = 'no-barcode-${uuid.v4()}';
+    } else {
+      // それ以外の場合は、フォームの値をそのまま使用
+      barcodeValue = form.control('barcode').value;
+    }
+
     final newProduct = Product(
-      barcode: form.control('barcode').value,
+      barcode: barcodeValue,
       name: form.control('name').value,
       price: form.control('price').value,
       category: form.control('category').value,
@@ -154,6 +200,8 @@ class _ProductEditScreenState
 
   // 商品を削除する処理
   void _deleteProduct() {
+    // このメソッドの`context`はProductEditScreenのものです
+    final screenContext = context;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -170,13 +218,21 @@ class _ProductEditScreenState
             ),
             child: const Text('削除'),
             onPressed: () async {
-              await context
-                  .read<ProductProvider>()
-                  .deleteProduct(widget.product!.barcode);
-              if (mounted) {
-                // 一覧画面に戻る
-                Navigator.of(context).pop();
-              }
+              // 1. awaitの前に、contextに依存するものをすべて変数に確保する
+              final provider = Provider.of<ProductProvider>(
+                screenContext,
+                listen: false,
+              );
+              final navigator = Navigator.of(screenContext);
+
+              await provider.deleteProduct(
+                widget.product!.barcode,
+              );
+
+              // 一覧画面に戻る
+              navigator.pop(ctx);
+              // 編集画面自体を閉じて、一覧画面に戻る
+              navigator.pop(screenContext);
             },
           ),
         ],
@@ -225,6 +281,12 @@ class _ProductEditScreenState
               const SizedBox(height: 24),
 
               // --- 入力フォーム ---
+              if (!_isEditing)
+                ReactiveCheckboxListTile(
+                  formControlName: 'isBarcodeLess',
+                  title: const Text('バーコードなし商品として登録'),
+                ),
+
               ReactiveTextField<String>(
                 formControlName: 'barcode',
                 readOnly: _isEditing,
@@ -255,6 +317,7 @@ class _ProductEditScreenState
                     control.invalid && control.touched,
               ),
               const SizedBox(height: 16),
+
               ReactiveTextField<String>(
                 formControlName: 'name',
                 decoration: const InputDecoration(
