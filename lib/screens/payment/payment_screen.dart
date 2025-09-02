@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
+import 'package:registore/utils/currency_input_formatter.dart';
 import 'package:registore/utils/formatter.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/sales_provider.dart';
@@ -62,11 +63,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _calculateChange() {
+    final tenderedString = _tenderedController.text
+        .replaceAll(',', '');
     final tenderedAmount =
-        double.tryParse(_tenderedController.text) ?? 0.0;
+        double.tryParse(tenderedString) ?? 0.0;
     setState(() {
       _changeAmount = tenderedAmount - widget.totalAmount;
     });
+  }
+
+  // 同額
+  void _setSameAmount() {
+    // TextEditingControllerの値を更新すると、リスナーが自動で_calculateChangeを呼び出す
+    _tenderedController.text = formatCurrency(
+      widget.totalAmount,
+    ).replaceAll('¥', '');
   }
 
   // 会計を完了する処理
@@ -86,8 +97,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       _isProcessing = true;
     });
 
+    final tenderedString = _tenderedController.text
+        .replaceAll(',', '');
     final tenderedAmount =
-        double.tryParse(_tenderedController.text) ?? 0.0;
+        double.tryParse(tenderedString) ?? 0.0;
 
     // SalesProviderを呼び出して販売履歴を保存
     await context.read<SalesProvider>().addSale(
@@ -223,6 +236,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
               'お預かり',
               null,
               controller: _tenderedController,
+              onSameAmountPressed:
+                  _setSameAmount, // 作成したメソッドを渡す
             ),
             _buildSummaryRow(
               'お釣り',
@@ -287,7 +302,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: ElevatedButton(
                 onPressed:
                     ((int.tryParse(
-                                  _tenderedController.text,
+                                  _tenderedController.text
+                                      .replaceAll(',', ''),
                                 ) ??
                                 0) <=
                             0 ||
@@ -321,6 +337,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     double? amount, {
     TextEditingController? controller,
     bool isEmphasized = false,
+    VoidCallback? onSameAmountPressed,
   }) {
     final textStyle = TextStyle(
       fontSize: isEmphasized ? 22 : 18,
@@ -335,18 +352,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           Text(label, style: textStyle),
           if (controller != null)
-            SizedBox(
-              width: 150,
-              child: TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.right,
-                style: textStyle,
-                decoration: const InputDecoration(
-                  hintText: '金額を入力',
-                  suffixText: ' 円',
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // onSameAmountPressedが渡された場合のみボタンを表示
+                if (onSameAmountPressed != null)
+                  OutlinedButton(
+                    onPressed: onSameAmountPressed,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                    ),
+                    child: const Text('同額'),
+                  ),
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.right,
+                    style: textStyle,
+                    inputFormatters: [
+                      CurrencyInputFormatter(), // 作成したカスタムフォーマッタを適用
+                    ],
+                    decoration: const InputDecoration(
+                      hintText: '金額を入力',
+                    ),
+                  ),
                 ),
-              ),
+                // onSameAmountPressedが渡された場合のみボタンを表示
+              ],
             )
           else
             Text(
