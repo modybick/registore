@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/screens/settings/edit_unique_barcode_async_validator.dart';
 import 'package:registore/screens/settings/unique_barcode_async_validator.dart';
 import 'package:registore/utils/currency_input_formatter.dart';
 import 'package:registore/utils/currency_value_accessor.dart';
@@ -10,7 +11,6 @@ import 'package:registore/models/product_model.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/widgets/app_scaffold.dart';
 import 'package:reactive_forms/reactive_forms.dart';
-import 'package:uuid/uuid.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final Product? product; // nullなら新規登録、nullでなければ編集
@@ -36,18 +36,22 @@ class _ProductEditScreenState
 
     _isEditing = widget.product != null;
 
-    // _imagePath = _isEditing ? widget.product!.imagePath : null;
+    // TODO: _imagePath = _isEditing ? widget.product!.imagePath : null;
 
     // フォームの構造とバリデーションルールを定義
     form = FormGroup({
-      'isBarcodeLess': FormControl<bool>(value: false),
       'barcode': FormControl<String>(
         value: _isEditing ? widget.product!.barcode : '',
-        validators: [Validators.required],
         // 新規登録モードの場合のみ、非同期バリデーターを適用
-        asyncValidators: _isEditing
-            ? []
-            : [UniqueBarcodeAsyncValidator()],
+        asyncValidators: [
+          // 編集モードか新規登録モードかで、適用するバリデーターを切り替える
+          if (_isEditing)
+            EditUniqueBarcodeAsyncValidator(
+              widget.product!.id!,
+            )
+          else
+            UniqueBarcodeAsyncValidator(),
+        ],
       ),
       'name': FormControl<String>(
         value: _isEditing ? widget.product!.name : '',
@@ -62,43 +66,8 @@ class _ProductEditScreenState
       ),
       'category': FormControl<String>(
         value: _isEditing ? widget.product!.category : '',
-        validators: [Validators.required],
       ),
     });
-
-    // 編集モードではバーコード入力欄を無効化
-    if (_isEditing) {
-      form.control('barcode').markAsDisabled();
-    } else {
-      // --- ▼▼▼ チェックボックスの状態に応じてバーコード欄を制御するリスナーを追加 ▼▼▼ ---
-      final isBarcodeLessControl =
-          form.control('isBarcodeLess')
-              as FormControl<bool>;
-      final barcodeControl = form.control('barcode');
-
-      // 初期状態を設定
-      if (isBarcodeLessControl.value ?? false) {
-        barcodeControl.markAsDisabled();
-        barcodeControl.setValidators([]); // バリデーターを解除
-      }
-
-      // チェックボックスの値が変更されたら、バーコード欄の状態を更新
-      isBarcodeLessControl.valueChanges.listen((
-        isBarcodeLess,
-      ) {
-        if (isBarcodeLess ?? false) {
-          barcodeControl.markAsDisabled(); // 無効化
-          barcodeControl.setValidators([]); // バリデーターを解除
-          barcodeControl.updateValueAndValidity(); // 状態を更新
-        } else {
-          barcodeControl.markAsEnabled(); // 有効化
-          barcodeControl.setValidators([
-            Validators.required,
-          ]); // バリデーターを再設定
-          barcodeControl.updateValueAndValidity(); // 状態を更新
-        }
-      });
-    }
   }
 
   @override
@@ -114,25 +83,14 @@ class _ProductEditScreenState
       return;
     }
 
-    // --- ▼▼▼ 保存時のバーコード生成ロジックを追加 ▼▼▼ ---
-    String barcodeValue;
-    final isBarcodeLess =
-        form.control('isBarcodeLess').value as bool;
-
-    if (!_isEditing && isBarcodeLess) {
-      // 新規登録かつ「バーコードなし」がONの場合、UUIDを生成
-      Uuid uuid = Uuid();
-      barcodeValue = 'no-barcode-${uuid.v4()}';
-    } else {
-      // それ以外の場合は、フォームの値をそのまま使用
-      barcodeValue = form.control('barcode').value;
-    }
-
     final newProduct = Product(
-      barcode: barcodeValue,
+      id: _isEditing
+          ? widget.product!.id
+          : null, // 編集時はidを引き継ぐ
+      barcode: form.control('barcode').value as String?,
       name: form.control('name').value,
       price: form.control('price').value,
-      category: form.control('category').value,
+      category: form.control('category').value as String?,
     );
 
     final provider = context.read<ProductProvider>();
@@ -226,7 +184,7 @@ class _ProductEditScreenState
               final navigator = Navigator.of(screenContext);
 
               await provider.deleteProduct(
-                widget.product!.barcode,
+                widget.product!.id!,
               );
 
               // 一覧画面に戻る
@@ -281,35 +239,21 @@ class _ProductEditScreenState
               const SizedBox(height: 24),
 
               // --- 入力フォーム ---
-              if (!_isEditing)
-                ReactiveCheckboxListTile(
-                  formControlName: 'isBarcodeLess',
-                  title: const Text('バーコードなし商品として登録'),
-                ),
-
               ReactiveTextField<String>(
                 formControlName: 'barcode',
                 readOnly: _isEditing,
                 decoration: InputDecoration(
-                  labelText: _isEditing
-                      ? 'バーコード（編集不可）'
-                      : 'バーコード',
+                  labelText: 'バーコード（任意）',
                   prefixIcon: const Icon(
                     Icons.barcode_reader,
                   ),
-                  suffixIcon: _isEditing
-                      ? null
-                      : IconButton(
-                          tooltip: 'スキャンして入力',
-                          icon: const Icon(
-                            Icons.qr_code_scanner,
-                          ),
-                          onPressed:
-                              _showBarcodeScannerDialog,
-                        ),
+                  suffixIcon: IconButton(
+                    tooltip: 'スキャンして入力',
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: _showBarcodeScannerDialog,
+                  ),
                 ),
                 validationMessages: {
-                  'required': (error) => '必須項目です',
                   'unique': (error) => 'このバーコードは既に使用されています',
                 },
                 // ユーザーの入力が終わったタイミングで非同期バリデーションをトリガー
@@ -348,12 +292,9 @@ class _ProductEditScreenState
               ReactiveTextField<String>(
                 formControlName: 'category',
                 decoration: const InputDecoration(
-                  labelText: 'カテゴリ',
+                  labelText: 'カテゴリ（任意）',
                   prefixIcon: Icon(Icons.category),
                 ),
-                validationMessages: {
-                  'required': (error) => '必須項目です',
-                },
               ),
               const SizedBox(height: 40),
 

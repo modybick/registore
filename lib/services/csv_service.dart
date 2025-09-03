@@ -47,10 +47,11 @@ class CsvService {
         try {
           // CSVの各列が正しいフォーマットかチェック
           final product = Product(
-            barcode: row[0].toString(),
-            name: row[1].toString(),
-            price: int.parse(row[2].toString()),
-            category: row[3].toString(),
+            id: null,
+            barcode: row[1].toString(),
+            name: row[2].toString(),
+            price: int.parse(row[3].toString()),
+            category: row[4].toString(),
           );
           productsToImport.add(product);
         } catch (e) {
@@ -181,11 +182,18 @@ class CsvService {
       // 1. CSVデータのヘッダー行を作成
       // インポート機能とフォーマットを合わせるのが重要
       List<List<dynamic>> rows = [];
-      rows.add(['barcode', 'name', 'price', 'category']);
+      rows.add([
+        'number',
+        'barcode',
+        'name',
+        'price',
+        'category',
+      ]);
 
       // 2. 各商品をCSVの行に変換
       for (final product in products) {
         rows.add([
+          product.id,
           product.barcode,
           product.name,
           product.price,

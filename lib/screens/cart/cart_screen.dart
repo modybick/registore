@@ -329,7 +329,7 @@ class _CartListView extends StatelessWidget {
                       onPressed: () {
                         context
                             .read<CartProvider>()
-                            .decrementItem(item.barcode);
+                            .decrementItem(item.id);
                       },
                     ),
                     CircleAvatar(
@@ -351,7 +351,7 @@ class _CartListView extends StatelessWidget {
                       onPressed: () {
                         context
                             .read<CartProvider>()
-                            .incrementItem(item.barcode);
+                            .incrementItem(item.id);
                       },
                     ),
                   ],

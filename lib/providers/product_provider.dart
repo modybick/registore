@@ -22,13 +22,13 @@ class ProductProvider with ChangeNotifier {
   }
 
   // 商品を削除
-  Future<void> deleteProduct(String barcode) async {
-    await DatabaseService.instance.deleteProduct(barcode);
+  Future<void> deleteProduct(int id) async {
+    await DatabaseService.instance.deleteProduct(id);
     await reloadProducts();
   }
 
   // 商品リストからユニークなカテゴリのリストを生成するゲッター
-  List<String> get categories {
+  List<String?> get categories {
     if (_products.isEmpty) {
       return [];
     }

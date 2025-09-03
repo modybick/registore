@@ -103,7 +103,7 @@ class _ProductListBottomSheetState
                     category,
                   ) {
                     final products = productProvider
-                        .getProductsByCategory(category);
+                        .getProductsByCategory(category!);
                     return ListView.builder(
                       itemCount: products.length,
                       itemBuilder: (context, index) {

@@ -1,6 +1,7 @@
 class SaleDetail {
   final int? id;
   final int saleId;
+  final int productId;
   final String productName;
   final int price;
   final int quantity;
@@ -8,6 +9,7 @@ class SaleDetail {
   SaleDetail({
     this.id,
     required this.saleId,
+    required this.productId,
     required this.productName,
     required this.price,
     required this.quantity,
@@ -17,6 +19,7 @@ class SaleDetail {
     return {
       'id': id,
       'saleId': saleId,
+      'productId': productId,
       'productName': productName,
       'price': price,
       'quantity': quantity,
@@ -27,6 +30,7 @@ class SaleDetail {
     return SaleDetail(
       id: map['id'],
       saleId: map['saleId'],
+      productId: map['productId'],
       productName: map['productName'],
       price: map['price'],
       quantity: map['quantity'],

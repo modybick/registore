@@ -32,10 +32,11 @@ class DatabaseService {
   Future _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE products (
-        barcode TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        barcode TEXT UNIQUE,
         name TEXT NOT NULL,
         price INTEGER NOT NULL,
-        category TEXT NOT NULL,
+        category TEXT,
         imagePath TEXT
       )
     ''');
@@ -53,6 +54,7 @@ class DatabaseService {
       CREATE TABLE sale_details (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         saleId INTEGER NOT NULL,
+        productId INTEGER NOT NULL,
         productName TEXT NOT NULL,
         price INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
@@ -87,18 +89,18 @@ class DatabaseService {
     await db.update(
       'products',
       product.toMap(),
-      where: 'barcode = ?',
-      whereArgs: [product.barcode],
+      where: 'id = ?',
+      whereArgs: [product.id],
     );
   }
 
   // 商品をDBから削除
-  Future<void> deleteProduct(String barcode) async {
+  Future<void> deleteProduct(int id) async {
     final db = await instance.database;
     await db.delete(
       'products',
-      where: 'barcode = ?',
-      whereArgs: [barcode],
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 
@@ -129,6 +131,23 @@ class DatabaseService {
       where: 'barcode = ?',
       whereArgs: [barcode],
       limit: 1, // 1件見つかれば十分なので、検索を効率化
+    );
+    return maps.isNotEmpty;
+  }
+
+  /// 指定されたID以外の商品で、そのバーコードが既に使用されているかをチェックする
+  Future<bool> isBarcodeTakenByAnotherProduct(
+    String barcode,
+    int currentId,
+  ) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'products',
+      columns: ['id'],
+      // barcodeが一致し、かつidが異なるレコードを探す
+      where: 'barcode = ? AND id != ?',
+      whereArgs: [barcode, currentId],
+      limit: 1,
     );
     return maps.isNotEmpty;
   }
@@ -167,6 +186,7 @@ class DatabaseService {
       for (final item in items) {
         final detail = SaleDetail(
           saleId: saleId,
+          productId: item.id,
           productName: item.name,
           price: item.price,
           quantity: item.quantity,

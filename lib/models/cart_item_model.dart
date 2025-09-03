@@ -3,7 +3,7 @@
 
 class CartItem {
   // 商品のバーコード (Productモデルと共通)
-  final String barcode;
+  final int id;
   // 商品名
   final String name;
   // 商品の単価
@@ -14,7 +14,7 @@ class CartItem {
   // コンストラクタ
   // CartItemオブジェクトを作成する際に、全てのプロパティを必須とする
   const CartItem({
-    required this.barcode,
+    required this.id,
     required this.name,
     required this.price,
     required this.quantity,

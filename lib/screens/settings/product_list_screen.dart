@@ -64,7 +64,7 @@ class _ProductListScreenState
                 context,
                 listen: false,
               );
-              await provider.deleteProduct(product.barcode);
+              await provider.deleteProduct(product.id!);
               if (mounted) Navigator.pop(ctx);
               // 削除後もリストをリフレッシュ
               _refreshList();
@@ -142,7 +142,7 @@ class _ProductListScreenState
                         ) {
                           final products = provider
                               .getProductsByCategory(
-                                category,
+                                category!,
                               );
                           return ListView.builder(
                             padding: const EdgeInsets.all(
@@ -166,7 +166,7 @@ class _ProductListScreenState
                                   ),
                                   title: Text(product.name),
                                   subtitle: Text(
-                                    '${formatCurrency(product.price)} / ${product.category}',
+                                    '${formatCurrency(product.price)}${(product.category == '' ? '' : ' / ${product.category}')}',
                                   ),
                                   trailing: Row(
                                     mainAxisSize:
@@ -193,7 +193,6 @@ class _ProductListScreenState
                                             (_) =>
                                                 _refreshList(),
                                           );
-                                          ;
                                         },
                                       ),
                                       IconButton(
