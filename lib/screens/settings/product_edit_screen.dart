@@ -218,11 +218,14 @@ class _ProductEditScreenState
                 screenContext,
                 listen: false,
               );
-              final navigator = Navigator.of(screenContext);
 
               await provider.deleteProduct(
                 widget.product!.id!,
               );
+
+              if (!context.mounted) return;
+
+              final navigator = Navigator.of(screenContext);
 
               // 一覧画面に戻る
               navigator.pop(ctx);

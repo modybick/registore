@@ -65,8 +65,10 @@ class _ProductListScreenState
                 context,
                 listen: false,
               );
+
               await provider.deleteProduct(product.id!);
-              if (mounted) Navigator.pop(ctx);
+
+              if (context.mounted) Navigator.pop(ctx);
               // 削除後もリストをリフレッシュ
               _refreshList();
             },

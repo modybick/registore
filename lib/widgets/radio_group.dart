@@ -49,7 +49,9 @@ class RadioGroup<T> extends StatelessWidget {
             return RadioListTile<T>(
               title: Text(option.title),
               value: option.value,
+              // ignore: deprecated_member_use
               groupValue: groupValue,
+              // ignore: deprecated_member_use
               onChanged: onChanged,
             );
           }).toList(),
