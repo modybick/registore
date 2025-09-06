@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
@@ -15,6 +16,11 @@ final RouteObserver<PageRoute> routeObserver =
 Future<void> main() async {
   // runApp() の前に Flutter の機能 (DB初期化など) を呼び出す場合に必要です。
   WidgetsFlutterBinding.ensureInitialized();
+  // アプリ全体の画面の向きを縦向き（上向きと下向き）に固定する
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   await SoundService.instance.init();
   runApp(const MyApp());
 }
