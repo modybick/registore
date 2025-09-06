@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
+import 'package:registore/providers/settings_provider.dart';
 import 'package:registore/utils/currency_input_formatter.dart';
 import 'package:registore/utils/formatter.dart';
 import '../../models/cart_item_model.dart';
@@ -194,10 +195,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         // 商品名
                         Expanded(
                           flex: 5,
-                          child: Text(
-                            item.name,
-                            overflow: TextOverflow
-                                .ellipsis, // 長い商品名は省略記号(...)で表示
+                          child: Consumer<SettingsProvider>(
+                            builder:
+                                (context, settings, child) {
+                                  return Text(
+                                    item.name,
+                                    maxLines:
+                                        settings
+                                            .showFullName
+                                        ? null
+                                        : settings
+                                              .productNameMaxLines,
+                                    overflow:
+                                        settings
+                                            .showFullName
+                                        ? TextOverflow
+                                              .visible
+                                        : TextOverflow
+                                              .ellipsis,
+                                  );
+                                },
                           ),
                         ),
                         // 数量

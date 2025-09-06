@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/providers/settings_provider.dart';
 import 'package:registore/utils/formatter.dart';
 import '../../models/sale_detail_model.dart';
 import '../../models/sale_model.dart';
@@ -239,11 +240,30 @@ class _SaleDetailScreenState
                                   children: [
                                     Expanded(
                                       flex: 5,
-                                      child: Text(
-                                        item.productName,
-                                        overflow:
-                                            TextOverflow
-                                                .ellipsis,
+                                      child: Consumer<SettingsProvider>(
+                                        builder:
+                                            (
+                                              context,
+                                              settings,
+                                              child,
+                                            ) {
+                                              return Text(
+                                                item.productName,
+                                                maxLines:
+                                                    settings
+                                                        .showFullName
+                                                    ? null
+                                                    : settings
+                                                          .productNameMaxLines,
+                                                overflow:
+                                                    settings
+                                                        .showFullName
+                                                    ? TextOverflow
+                                                          .visible
+                                                    : TextOverflow
+                                                          .ellipsis,
+                                              );
+                                            },
                                       ),
                                     ),
                                     Expanded(

@@ -16,9 +16,8 @@ class Product {
   final String? imagePath;
 
   // コンストラクタ
-  // Productオブジェクトを作成する際に、全てのプロパティを必須とする
   const Product({
-    required this.id,
+    this.id,
     this.barcode,
     required this.name,
     required this.price,

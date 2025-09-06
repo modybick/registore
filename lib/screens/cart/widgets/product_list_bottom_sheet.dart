@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:registore/providers/settings_provider.dart';
 import '../../../utils/formatter.dart';
 import '../../../providers/cart_provider.dart';
 import '../../../providers/product_provider.dart';
@@ -109,7 +110,27 @@ class _ProductListBottomSheetState
                       itemBuilder: (context, index) {
                         final product = products[index];
                         return ListTile(
-                          title: Text(product.name),
+                          title: Consumer<SettingsProvider>(
+                            builder:
+                                (context, settings, child) {
+                                  return Text(
+                                    product.name,
+                                    maxLines:
+                                        settings
+                                            .showFullName
+                                        ? null
+                                        : settings
+                                              .productNameMaxLines,
+                                    overflow:
+                                        settings
+                                            .showFullName
+                                        ? TextOverflow
+                                              .visible
+                                        : TextOverflow
+                                              .ellipsis,
+                                  );
+                                },
+                          ),
                           subtitle: Text(
                             formatCurrency(product.price),
                           ),

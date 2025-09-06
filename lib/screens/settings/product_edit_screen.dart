@@ -83,11 +83,22 @@ class _ProductEditScreenState
       return;
     }
 
+    // バーコードが''の場合、nullに変換
+    String? barcodeValue =
+        form.control('barcode').value as String?;
+
+    // もしバーコードの値がnullではなく、かつトリム（前後の空白削除）した結果が空文字列なら、
+    // nullとして扱うようにする
+    if (barcodeValue != null &&
+        barcodeValue.trim().isEmpty) {
+      barcodeValue = null;
+    }
+
     final newProduct = Product(
       id: _isEditing
           ? widget.product!.id
           : null, // 編集時はidを引き継ぐ
-      barcode: form.control('barcode').value as String?,
+      barcode: barcodeValue,
       name: form.control('name').value,
       price: form.control('price').value,
       category: form.control('category').value as String?,

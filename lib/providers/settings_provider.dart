@@ -20,6 +20,16 @@ class SettingsProvider with ChangeNotifier {
   BarcodeScanType get barcodeScanType => _barcodeScanType;
   static const String _barcodeTypeKey = 'barcode_scan_type';
 
+  // 商品名表示行数設定
+  bool _showFullName = false;
+  bool get showFullName => _showFullName;
+  static const String _showFullNameKey = 'show_full_name';
+
+  int _productNameMaxLines = 1; // デフォルトは1行
+  int get productNameMaxLines => _productNameMaxLines;
+  static const String _productNameMaxLinesKey =
+      'product_name_max_lines';
+
   SettingsProvider() {
     // Providerが作成されたときに、保存された設定値をロードする
     loadSettings();
@@ -39,6 +49,12 @@ class SettingsProvider with ChangeNotifier {
         BarcodeScanType.both.index;
     _barcodeScanType =
         BarcodeScanType.values[savedTypeIndex];
+
+    // 商品名表示行数設定
+    _showFullName =
+        prefs.getBool(_showFullNameKey) ?? false;
+    _productNameMaxLines =
+        prefs.getInt(_productNameMaxLinesKey) ?? 2;
 
     notifyListeners();
   }
@@ -93,5 +109,26 @@ class SettingsProvider with ChangeNotifier {
         // すべてのフォーマットを対象
         return [BarcodeFormat.all];
     }
+  }
+
+  // 商品名省略設定を更新する
+  Future<void> updateShowFullName(bool newValue) async {
+    _showFullName = newValue;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_showFullNameKey, newValue);
+  }
+
+  // 商品名表示行数を更新する
+  Future<void> updateProductNameMaxLines(
+    int newMaxLines,
+  ) async {
+    _productNameMaxLines = newMaxLines;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      _productNameMaxLinesKey,
+      newMaxLines,
+    );
   }
 }

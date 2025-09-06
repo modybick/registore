@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:registore/screens/settings/product_display_settings_screen.dart';
 import '../../widgets/app_scaffold.dart';
 import 'barcode_settings_screen.dart'; // 新しい画面をインポート
 import 'master_data_settings_screen.dart'; // 新しい画面をインポート
@@ -29,6 +30,24 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.view_list_outlined),
+            title: const Text('商品一覧表示設定'),
+            subtitle: const Text('リストでの商品名の表示文字数などを設定します。'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ProductDisplaySettingsScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(),
+
           ListTile(
             leading: const Icon(Icons.storage_outlined),
             title: const Text('マスタ設定'),

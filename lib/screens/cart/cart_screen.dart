@@ -314,7 +314,19 @@ class _CartListView extends StatelessWidget {
                 vertical: 4,
               ),
               child: ListTile(
-                title: Text(item.name),
+                title: Consumer<SettingsProvider>(
+                  builder: (context, settings, child) {
+                    return Text(
+                      item.name,
+                      maxLines: settings.showFullName
+                          ? null
+                          : settings.productNameMaxLines,
+                      overflow: settings.showFullName
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                    );
+                  },
+                ),
                 subtitle: Text(
                   '単価: ${formatCurrency(item.price)}',
                 ),
