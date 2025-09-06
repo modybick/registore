@@ -28,17 +28,49 @@ class ProductProvider with ChangeNotifier {
   }
 
   // 商品リストからユニークなカテゴリのリストを生成するゲッター
-  List<String?> get categories {
+  List<String> get categories {
     if (_products.isEmpty) {
-      return [];
+      return ['すべて']; // 商品がない場合は「すべて」タブだけ
     }
-    // Setを使って重複を除外し、Listに変換
-    final uniqueCategories = _products
+    // 1. 全商品からユニークなカテゴリのSetを生成
+    final Set<String> uniqueCategoriesSet = _products
+        .map((p) => p.category)
+        .toSet();
+
+    // 2. 「未分類」カテゴリが存在するか確認し、存在すればSetから一時的に削除
+    final bool hasUncategorized = uniqueCategoriesSet
+        .remove('未分類');
+
+    // 3. 残りのカテゴリをListに変換し、アルファベット/五十音順にソート
+    final List<String> sortedCategories =
+        uniqueCategoriesSet.toList();
+    sortedCategories.sort();
+
+    // 4. 最終的なタブのリストを構築: まず「すべて」とソート済みカテゴリを追加
+    final List<String> finalTabs = [
+      'すべて',
+      ...sortedCategories,
+    ];
+
+    // 5. もし「未分類」カテゴリが存在したら、リストの末尾に追加
+    if (hasUncategorized) {
+      finalTabs.add('未分類');
+    }
+
+    return finalTabs;
+  }
+
+  /// 純粋な（「すべて」を含まない）ユニークなカテゴリのリストを返すゲッター
+  List<String> get pureCategories {
+    if (_products.isEmpty) return [];
+    final categories = _products
+        .where((p) => p.category != '未分類')
         .map((p) => p.category)
         .toSet()
         .toList();
-    // 先頭に「すべて」を追加して返す
-    return ['すべて', ...uniqueCategories];
+    categories.sort();
+
+    return categories;
   }
 
   // カテゴリに属する商品を取得するメソッド

@@ -11,7 +11,7 @@ class Product {
   // 価格 (小数点を含まない整数で管理することを推奨)
   final int price;
   // 商品カテゴリ
-  final String? category;
+  final String category;
   // 商品画像
   final String? imagePath;
 
@@ -21,7 +21,7 @@ class Product {
     this.barcode,
     required this.name,
     required this.price,
-    this.category,
+    required this.category,
     this.imagePath,
   });
 
@@ -33,7 +33,7 @@ class Product {
       barcode: map['barcode'] as String?,
       name: map['name'] as String,
       price: map['price'] as int,
-      category: map['category'] as String?,
+      category: map['category'] as String? ?? '未分類',
       imagePath: map['imagePath'] as String?,
     );
   }

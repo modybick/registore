@@ -11,6 +11,7 @@ import 'package:registore/models/product_model.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/widgets/app_scaffold.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:reactive_raw_autocomplete/reactive_raw_autocomplete.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final Product? product; // nullなら新規登録、nullでなければ編集
@@ -22,10 +23,13 @@ class ProductEditScreen extends StatefulWidget {
 
 class _ProductEditScreenState
     extends State<ProductEditScreen> {
-  late final FormGroup form;
+  late FormGroup form;
 
   // 編集モードかどうかを判定するフラグ
   late bool _isEditing;
+
+  // カテゴリ候補リストを保持するState変数
+  List<String> _categoryOptions = [];
 
   // 画像パスのプレースホルダー
   // String? _imagePath;
@@ -35,6 +39,25 @@ class _ProductEditScreenState
     super.initState();
 
     _isEditing = widget.product != null;
+
+    // initState内でProviderからデータを取得する安全な方法
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ProductProvider>();
+      // もしProviderにデータがなければロードする
+      if (provider.products.isEmpty) {
+        provider.reloadProducts().then((_) {
+          if (mounted) {
+            setState(() {
+              _categoryOptions = provider.pureCategories;
+            });
+          }
+        });
+      } else {
+        setState(() {
+          _categoryOptions = provider.pureCategories;
+        });
+      }
+    });
 
     // TODO: _imagePath = _isEditing ? widget.product!.imagePath : null;
 
@@ -70,11 +93,6 @@ class _ProductEditScreenState
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   // フォームを保存する処理
   Future<void> _saveForm() async {
     if (form.invalid) {
@@ -94,6 +112,14 @@ class _ProductEditScreenState
       barcodeValue = null;
     }
 
+    // カテゴリが未入力かどうか
+    String categoryValue =
+        form.control('category').value ?? '';
+    // もし入力が空文字列なら、「未分類」として扱う
+    if (categoryValue.trim().isEmpty) {
+      categoryValue = '未分類';
+    }
+
     final newProduct = Product(
       id: _isEditing
           ? widget.product!.id
@@ -101,7 +127,7 @@ class _ProductEditScreenState
       barcode: barcodeValue,
       name: form.control('name').value,
       price: form.control('price').value,
-      category: form.control('category').value as String?,
+      category: categoryValue,
     );
 
     final provider = context.read<ProductProvider>();
@@ -252,7 +278,6 @@ class _ProductEditScreenState
               // --- 入力フォーム ---
               ReactiveTextField<String>(
                 formControlName: 'barcode',
-                readOnly: _isEditing,
                 decoration: InputDecoration(
                   labelText: 'バーコード（任意）',
                   prefixIcon: const Icon(
@@ -284,6 +309,7 @@ class _ProductEditScreenState
                 },
               ),
               const SizedBox(height: 16),
+
               ReactiveTextField<int>(
                 formControlName: 'price',
                 valueAccessor: CurrencyValueAccessor(),
@@ -300,13 +326,86 @@ class _ProductEditScreenState
                 },
               ),
               const SizedBox(height: 16),
-              ReactiveTextField<String>(
+
+              ReactiveRawAutocomplete<String, String>(
                 formControlName: 'category',
-                decoration: const InputDecoration(
-                  labelText: 'カテゴリ（任意）',
-                  prefixIcon: Icon(Icons.category),
-                ),
+                optionsBuilder: (textEditingValue) {
+                  final text = textEditingValue.text;
+                  if (text.isEmpty) {
+                    return _categoryOptions;
+                  }
+                  return _categoryOptions.where(
+                    (option) => option
+                        .toLowerCase()
+                        .startsWith(text.toLowerCase()),
+                  );
+                },
+                optionsViewBuilder:
+                    (context, onSelected, options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          child: ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(
+                                  maxHeight: 200,
+                                ),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (context, index) {
+                                final option = options
+                                    .elementAt(index);
+                                return InkWell(
+                                  onTap: () =>
+                                      onSelected(option),
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.all(
+                                          16.0,
+                                        ),
+                                    child: Text(option),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                // fieldViewBuilderの中で`ReactiveTextField`を使う
+                fieldViewBuilder:
+                    (
+                      context,
+                      textEditingController,
+                      focusNode,
+                      onFieldSubmitted,
+                    ) {
+                      // `RawAutocomplete`から渡されるコントローラーとフォーカスノードは、
+                      // `ReactiveTextField`に渡すことで正しく連携される
+                      return ReactiveTextField<String>(
+                        formControlName:
+                            'category', // これがFormControlとUIを繋ぐ
+                        focusNode: focusNode,
+                        onTap: (control) {
+                          if (control.value == null ||
+                              control.value!.isEmpty) {
+                            control.value = 'a';
+                            control.value = '';
+                          }
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'カテゴリ (任意)',
+                          prefixIcon: Icon(Icons.category),
+                        ),
+                        onSubmitted: (_) =>
+                            onFieldSubmitted(),
+                      );
+                    },
               ),
+
               const SizedBox(height: 40),
 
               // --- ボタン ---
