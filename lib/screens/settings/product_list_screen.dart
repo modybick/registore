@@ -143,7 +143,7 @@ class _ProductListScreenState
                         ) {
                           final products = provider
                               .getProductsByCategory(
-                                category!,
+                                category,
                               );
                           return ListView.builder(
                             padding: const EdgeInsets.all(

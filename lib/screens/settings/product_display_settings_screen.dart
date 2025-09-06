@@ -61,9 +61,9 @@ class ProductDisplaySettingsScreen extends StatelessWidget {
                               value: settings
                                   .productNameMaxLines
                                   .toDouble(),
-                              min: 2,
+                              min: 1,
                               max: 5,
-                              divisions: 3, // 5 - 1 = 4分割
+                              divisions: 4, // 5 - 1 = 4分割
                               label:
                                   '${settings.productNameMaxLines} 行',
                               onChanged:

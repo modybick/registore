@@ -54,7 +54,7 @@ class SettingsProvider with ChangeNotifier {
     _showFullName =
         prefs.getBool(_showFullNameKey) ?? false;
     _productNameMaxLines =
-        prefs.getInt(_productNameMaxLinesKey) ?? 2;
+        prefs.getInt(_productNameMaxLinesKey) ?? 1;
 
     notifyListeners();
   }
