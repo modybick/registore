@@ -50,6 +50,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   _selectedPaymentMethod =
                       provider.methods.first.name;
                 });
+              } else {
+                setState(() {
+                  _selectedPaymentMethod = 'なし';
+                });
               }
             }
           });
@@ -267,46 +271,72 @@ class _PaymentScreenState extends State<PaymentScreen> {
               padding: const EdgeInsets.symmetric(
                 vertical: 8.0,
               ),
-              // Wrapを使うと、ボタンが増えても自動で折り返してくれる
               child: Consumer<PaymentMethodProvider>(
                 builder: (context, provider, child) {
+                  if (provider.methods.isEmpty) {
+                    return const SizedBox(
+                      height: 50.0,
+                      child: Text('支払方法設定：なし'),
+                    );
+                  }
                   return SizedBox(
                     height: 50.0,
-                    child: Scrollbar(
-                      controller: _scrollController,
-                      thumbVisibility: true,
-                      thickness: 4.0,
-                      radius: const Radius.circular(2.0),
-                      child: ListView.builder(
-                        // 2. スクロール方向を水平に設定
-                        scrollDirection: Axis.horizontal,
-                        itemCount: provider.methods.length,
-                        itemBuilder: (context, index) {
-                          final method =
-                              provider.methods[index];
-                          // 3. 各ボタンの左右に余白を追加して、間隔を作る
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(
-                                  horizontal: 4.0,
-                                ),
-                            child: ChoiceChip(
-                              label: Text(method.name),
-                              selected:
-                                  _selectedPaymentMethod ==
-                                  method.name,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() {
-                                    _selectedPaymentMethod =
-                                        method.name;
-                                  });
-                                }
-                              },
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Scrollbar(
+                          controller: _scrollController,
+                          thumbVisibility: true,
+                          thickness: 4.0,
+                          radius: const Radius.circular(
+                            2.0,
+                          ),
+                          child: SingleChildScrollView(
+                            // 2. スクロール方向を水平に設定
+                            controller: _scrollController,
+                            scrollDirection:
+                                Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth:
+                                    constraints.maxWidth,
+                              ),
+                              child: Row(
+                                // ★★★ここが重要★★★
+                                // 子要素（ボタン）を均等に配置する
+                                mainAxisAlignment:
+                                    MainAxisAlignment
+                                        .spaceEvenly,
+                                children: provider.methods.map((
+                                  method,
+                                ) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 4.0,
+                                        ),
+                                    child: ChoiceChip(
+                                      label: Text(
+                                        method.name,
+                                      ),
+                                      selected:
+                                          _selectedPaymentMethod ==
+                                          method.name,
+                                      onSelected: (selected) {
+                                        if (selected) {
+                                          setState(() {
+                                            _selectedPaymentMethod =
+                                                method.name;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
