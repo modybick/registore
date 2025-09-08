@@ -16,8 +16,13 @@ class ProductDisplaySettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             children: [
               // --- 全文表示チェックボックス ---
-              CheckboxListTile(
-                title: const Text('長い商品名を省略せずに全文表示する'),
+              SwitchListTile(
+                title: const Text(
+                  '長い商品名を全文表示する',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 subtitle: const Text(
                   'OFFにすると、下の設定行数で折り返して表示されます。',
                 ),
@@ -29,8 +34,6 @@ class ProductDisplaySettingsScreen extends StatelessWidget {
                 },
               ),
 
-              const Divider(height: 30),
-
               // --- ▼▼▼ 表示行数設定スライダー ▼▼▼ ---
               Opacity(
                 opacity: settings.showFullName ? 0.4 : 1.0,
@@ -40,12 +43,7 @@ class ProductDisplaySettingsScreen extends StatelessWidget {
                       leading: Icon(
                         Icons.format_line_spacing,
                       ),
-                      title: Text(
-                        '最大表示行数',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      title: Text('最大表示行数'),
                       subtitle: Text(
                         '「全文表示」がOFFのときに適用されます。',
                       ),
@@ -85,6 +83,27 @@ class ProductDisplaySettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+
+              const Divider(),
+
+              SwitchListTile(
+                title: const Text(
+                  'バーコードなしタブを表示',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: const Text(
+                  '商品一覧に「バーコードなし」商品をまとめたタブを追加します',
+                ),
+                value: settings.showNoBarcodeTab,
+                onChanged: (newValue) {
+                  // Providerのメソッドを呼び出して設定を更新
+                  context
+                      .read<SettingsProvider>()
+                      .updateShowNoBarcodeTab(newValue);
+                },
               ),
             ],
           );

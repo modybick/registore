@@ -111,4 +111,13 @@ class ProductProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  /// バーコードが設定されていない商品のリストを返すゲッター
+  List<Product> get productsWithNoBarcode {
+    return _products
+        .where(
+          (p) => p.barcode == null || p.barcode!.isEmpty,
+        )
+        .toList();
+  }
 }

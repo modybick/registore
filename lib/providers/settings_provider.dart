@@ -30,6 +30,11 @@ class SettingsProvider with ChangeNotifier {
   static const String _productNameMaxLinesKey =
       'product_name_max_lines';
 
+  bool _showNoBarcodeTab = true; // デフォルトは表示する
+  bool get showNoBarcodeTab => _showNoBarcodeTab;
+  static const String _showNoBarcodeTabKey =
+      'show_no_barcode_tab';
+
   SettingsProvider() {
     // Providerが作成されたときに、保存された設定値をロードする
     loadSettings();
@@ -55,6 +60,10 @@ class SettingsProvider with ChangeNotifier {
         prefs.getBool(_showFullNameKey) ?? false;
     _productNameMaxLines =
         prefs.getInt(_productNameMaxLinesKey) ?? 1;
+
+    // バーコードなし商品タブ表示設定
+    _showNoBarcodeTab =
+        prefs.getBool(_showNoBarcodeTabKey) ?? true;
 
     notifyListeners();
   }
@@ -130,5 +139,13 @@ class SettingsProvider with ChangeNotifier {
       _productNameMaxLinesKey,
       newMaxLines,
     );
+  }
+
+  // バーコードなし商品タブ表示を更新する
+  Future<void> updateShowNoBarcodeTab(bool newValue) async {
+    _showNoBarcodeTab = newValue;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_showNoBarcodeTabKey, newValue);
   }
 }
