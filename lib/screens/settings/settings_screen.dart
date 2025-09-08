@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:registore/screens/settings/display_settings_screen.dart';
 import 'package:registore/screens/settings/product_display_settings_screen.dart';
 import '../../widgets/app_scaffold.dart';
 import 'barcode_settings_screen.dart'; // 新しい画面をインポート
@@ -15,6 +16,24 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         children: [
           ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text('ディスプレイ設定'),
+            subtitle: const Text('テーマ・フォントサイズ等の設定をします。'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const DisplaySettingsScreen(),
+                ),
+              );
+            },
+          ),
+
+          const Divider(),
+
+          ListTile(
             leading: const Icon(Icons.qr_code_scanner),
             title: const Text('バーコード読み取り設定'),
             subtitle: const Text('スキャンの間隔や対象コードを編集します。'),
@@ -29,6 +48,7 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
+
           const Divider(),
 
           ListTile(

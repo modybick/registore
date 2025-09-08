@@ -209,7 +209,9 @@ class _ProductEditScreenState
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.error,
             ),
             child: const Text('削除'),
             onPressed: () async {

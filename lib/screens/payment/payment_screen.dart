@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
 import 'package:registore/providers/settings_provider.dart';
@@ -83,15 +84,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _tenderedController.text = formatCurrency(
       widget.totalAmount,
     ).replaceAll('¥', '');
+    final FocusScopeNode currentScope = FocusScope.of(
+      context,
+    );
+    if (!currentScope.hasPrimaryFocus &&
+        currentScope.hasFocus) {
+      FocusManager.instance.primaryFocus!.unfocus();
+    }
   }
 
   // 会計を完了する処理
   Future<void> _completePayment() async {
     if (_selectedPaymentMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('支払方法を選択してください'),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(
+            context,
+          ).colorScheme.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -362,7 +372,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   padding: const EdgeInsets.symmetric(
                     vertical: 16,
                   ),
-                  textStyle: const TextStyle(
+                  textStyle: GoogleFonts.mPlusRounded1c(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -404,7 +414,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               children: [
                 // onSameAmountPressedが渡された場合のみボタンを表示
                 if (onSameAmountPressed != null)
-                  OutlinedButton(
+                  FilledButton(
                     onPressed: onSameAmountPressed,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -413,6 +423,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     child: const Text('同額'),
                   ),
+                SizedBox(width: 20),
                 SizedBox(
                   width: 150,
                   child: TextField(
@@ -424,6 +435,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       CurrencyInputFormatter(), // 作成したカスタムフォーマッタを適用
                     ],
                     decoration: const InputDecoration(
+                      filled: true,
                       hintText: '金額を入力',
                     ),
                     onSubmitted: (value) {
@@ -444,7 +456,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Text(
               formatCurrency(amount ?? 0),
               style: textStyle.copyWith(
-                color: isEmphasized ? Colors.red : null,
+                color: isEmphasized
+                    ? Theme.of(context)
+                          .colorScheme
+                          .error // テーマから色を取得
+                    : null,
               ),
             ),
         ],

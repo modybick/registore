@@ -127,7 +127,9 @@ class _PaymentMethodListScreenState
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.error,
             ),
             child: const Text('削除'),
             onPressed: () {
@@ -200,9 +202,11 @@ class _PaymentMethodListScreenState
                       ),
                       // 2. 削除ボタンを追加
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
-                          color: Colors.red,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.error,
                         ),
                         onPressed: () =>
                             _showDeleteConfirmation(method),

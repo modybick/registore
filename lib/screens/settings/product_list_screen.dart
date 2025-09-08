@@ -57,7 +57,9 @@ class _ProductListScreenState
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.error,
             ),
             child: const Text('削除'),
             onPressed: () async {
@@ -218,10 +220,12 @@ class _ProductListScreenState
                                         },
                                       ),
                                       IconButton(
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons
                                               .delete_outline,
-                                          color: Colors.red,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
                                         ),
                                         onPressed: () =>
                                             _showDeleteConfirmation(

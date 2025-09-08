@@ -83,7 +83,9 @@ class _CartScreenState extends State<CartScreen> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('商品が見つかりません: $barcodeValue'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.error,
             behavior: SnackBarBehavior.floating,
             margin: EdgeInsets.only(
               bottom:
@@ -121,9 +123,11 @@ class _CartScreenState extends State<CartScreen> {
             onPressed: () => Navigator.of(ctx).pop(),
           ),
           TextButton(
-            child: const Text(
+            child: Text(
               '削除する',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             onPressed: () {
               context.read<CartProvider>().clearCart();
@@ -334,9 +338,11 @@ class _CartListView extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.remove_circle_outline,
-                        color: Colors.redAccent,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.error,
                       ),
                       onPressed: () {
                         context
@@ -356,9 +362,11 @@ class _CartListView extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.add_circle_outline,
-                        color: Colors.green,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.tertiary,
                       ),
                       onPressed: () {
                         context
@@ -401,23 +409,16 @@ class _ControlPanel extends StatelessWidget {
     return Consumer<CartProvider>(
       builder: (context, cart, child) {
         final bool isCartEmpty = cart.items.isEmpty;
-
         return Container(
           padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(25),
-                spreadRadius: 0,
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
+          decoration: BoxDecoration(boxShadow: [
+
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Divider(),
               Padding(
                 padding: const EdgeInsets.only(
                   bottom: 12.0,
@@ -440,9 +441,14 @@ class _ControlPanel extends StatelessWidget {
                           ? null
                           : onClearCart,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(
-                          color: Colors.red,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.error,
+
+                        side: BorderSide(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.error,
                         ),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,

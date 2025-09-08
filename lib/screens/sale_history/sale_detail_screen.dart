@@ -78,7 +78,7 @@ class _SaleDetailScreenState
               : '取り消しを元に戻しました。',
         ),
         backgroundColor: _currentSale.isCancelled
-            ? Colors.red
+            ? Theme.of(context).colorScheme.error
             : Colors.blue,
         duration: const Duration(milliseconds: 1500),
       ),
@@ -136,12 +136,14 @@ class _SaleDetailScreenState
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(8.0),
-                    color: Colors.red[100],
-                    child: const Text(
+                    color: Colors.red[200],
+                    child: Text(
                       'この販売は取り消し済みです',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.red,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -322,21 +324,18 @@ class _SaleDetailScreenState
         child: Column(
           children: [
             _buildSummaryRow(
-              '合計金額 ($totalItems点)',
-              sale.totalAmount,
-            ),
-            _buildSummaryRow('お預かり', sale.tenderedAmount),
-            _buildSummaryRow(
-              'お釣り',
-              changeAmount,
-              isEmphasized: true,
-            ),
-            const Divider(height: 20),
-            _buildSummaryRow(
               '支払方法',
               null,
               valueText: sale.paymentMethod,
             ),
+            const Divider(height: 20),
+            _buildSummaryRow(
+              '合計金額 ($totalItems点)',
+              sale.totalAmount,
+              isEmphasized: true,
+            ),
+            _buildSummaryRow('お預かり', sale.tenderedAmount),
+            _buildSummaryRow('お釣り', changeAmount),
           ],
         ),
       ),
@@ -365,7 +364,9 @@ class _SaleDetailScreenState
           Text(
             valueText ?? formatCurrency(amount ?? 0),
             style: textStyle.copyWith(
-              color: isEmphasized ? Colors.red : null,
+              color: isEmphasized
+                  ? Theme.of(context).colorScheme.error
+                  : null,
             ),
           ),
         ],
@@ -401,11 +402,11 @@ class _SaleDetailScreenState
           style: OutlinedButton.styleFrom(
             foregroundColor: _currentSale.isCancelled
                 ? Colors.blue
-                : Colors.red,
+                : Theme.of(context).colorScheme.error,
             side: BorderSide(
               color: _currentSale.isCancelled
                   ? Colors.blue
-                  : Colors.red,
+                  : Theme.of(context).colorScheme.error,
             ),
           ),
         ),

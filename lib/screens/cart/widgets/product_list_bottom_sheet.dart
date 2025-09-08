@@ -81,7 +81,7 @@ class _ProductListBottomSheetState
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Colors.grey[400],
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -105,7 +105,7 @@ class _ProductListBottomSheetState
                   ) {
                     final products = productProvider
                         .getProductsByCategory(category);
-                    return ListView.builder(
+                    return ListView.separated(
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         final product = products[index];
@@ -142,6 +142,18 @@ class _ProductListBottomSheetState
                           },
                         );
                       },
+                      separatorBuilder:
+                          (
+                            BuildContext context,
+                            int index,
+                          ) {
+                            return Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 10,
+                              endIndent: 10,
+                            );
+                          },
                     );
                   }).toList(),
                 ),

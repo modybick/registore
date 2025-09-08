@@ -93,7 +93,9 @@ class _SalesHistoryScreenState
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isChecked
-                        ? Colors.red
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.error
                         : Colors.grey,
                   ),
                   onPressed: isChecked
@@ -121,14 +123,18 @@ class _SalesHistoryScreenState
                           // まずダイアログを閉じる
                           navigator.pop();
 
+                          if (!context.mounted) return;
+
                           // 元の画面がまだ存在することを確認してからスナックバーを表示
                           if (scaffoldMessenger.mounted) {
                             scaffoldMessenger.showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
                                   'すべての販売履歴を削除しました。',
                                 ),
-                                backgroundColor: Colors.red,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
                                 duration: Duration(
                                   milliseconds: 1500,
                                 ),
@@ -221,9 +227,7 @@ class _SalesHistoryScreenState
               final amountStyle = TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isCancelled
-                    ? Colors.grey
-                    : Colors.deepOrange,
+                color: isCancelled ? Colors.grey : null,
                 decoration: isCancelled
                     ? TextDecoration.lineThrough
                     : null,

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/payment_method_provider.dart';
 import 'package:registore/providers/product_provider.dart';
 import 'package:registore/providers/sales_provider.dart';
 import 'package:registore/services/sound_service.dart';
+import 'package:registore/utils/create_text_theme.dart';
 import 'providers/cart_provider.dart';
 import 'screens/cart/cart_screen.dart';
 import 'providers/settings_provider.dart';
+import 'package:registore/providers/theme_provider.dart'; // 作成したProvider
+import 'package:registore/theme/theme.dart'; // 作成したテーマ定義
 
 final RouteObserver<PageRoute> routeObserver =
     RouteObserver<PageRoute>();
@@ -22,7 +24,13 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   await SoundService.instance.init();
-  runApp(const MyApp());
+  runApp(
+    // ChangeNotifierProviderでThemeProviderをアプリ全体に提供
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,8 +38,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MultiProvider を使い、アプリ全体で利用する Provider を設定します。
-    // 今後、商品マスタや販売履歴の Provider を追加する際にここへ追記します。
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -49,43 +55,29 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => PaymentMethodProvider(),
         ),
-      ],
-      child: MaterialApp(
-        title: 'RegiStore',
-        theme: ThemeData(
-          // アプリ全体のカラーテーマを設定
-          primarySwatch: Colors.teal,
-          textTheme: GoogleFonts.mPlusRounded1cTextTheme(
-            Theme.of(context).textTheme,
-          ),
-          // UI要素の密度を調整
-          visualDensity:
-              VisualDensity.adaptivePlatformDensity,
-          // AppBarのテーマをカスタマイズ
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.teal,
-            foregroundColor: Colors.white,
-            elevation: 2,
-          ),
-          // ElevatedButtonのテーマをカスタマイズ
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-            ),
-          ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
         ),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          TextTheme textTheme = createTextTheme(
+            context,
+            "M PLUS Rounded 1c",
+            "M PLUS Rounded 1c",
+          );
 
-        navigatorObservers: [routeObserver],
-        // 最初に表示する画面を指定
-        home: const CartScreen(),
+          MaterialTheme theme = MaterialTheme(textTheme);
+          return MaterialApp(
+            title: 'RegiStore',
+            theme: theme.light(),
+            darkTheme: theme.dark(),
+            themeMode: themeProvider.themeMode,
+            navigatorObservers: [routeObserver],
+            // 最初に表示する画面を指定
+            home: const CartScreen(),
+          );
+        },
       ),
     );
   }
