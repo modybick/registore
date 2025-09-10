@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/providers/settings_provider.dart';
@@ -164,10 +166,47 @@ class _ProductListScreenState
                                       vertical: 4.0,
                                     ),
                                 child: ListTile(
-                                  leading: const Icon(
-                                    Icons.image_outlined,
-                                    size: 40,
-                                    color: Colors.grey,
+                                  leading: SizedBox(
+                                    width: 50, // 画像の幅を固定
+                                    height: 50, // 画像の高さを固定
+                                    child:
+                                        product.imagePath !=
+                                            null
+                                        ? ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                  4.0,
+                                                ), // 少し角を丸くする
+                                            child: Image.file(
+                                              File(
+                                                product
+                                                    .imagePath!,
+                                              ),
+                                              fit: BoxFit
+                                                  .cover,
+                                              // エラーハンドリング: もしファイルが存在しなかった場合
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) {
+                                                    return const Icon(
+                                                      Icons
+                                                          .error_outline,
+                                                      color:
+                                                          Colors.red,
+                                                    );
+                                                  },
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons
+                                                .image_outlined,
+                                            size: 40,
+                                            color:
+                                                Colors.grey,
+                                          ),
                                   ),
                                   title: Consumer<SettingsProvider>(
                                     builder: (context, settings, child) {

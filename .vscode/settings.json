@@ -1,3 +1,15 @@
 {
-  "cSpell.words": ["AUTOINCREMENT", "LTWH", "prefs", "registore", "xcconfig"]
+  "cSpell.words": [
+    "audioplayers",
+    "AUTOINCREMENT",
+    "cupertino",
+    "LTWH",
+    "prefs",
+    "registore",
+    "sqflite",
+    "Ucrop",
+    "xcconfig",
+    "yalantis"
+  ],
+  "java.configuration.updateBuildConfiguration": "automatic"
 }

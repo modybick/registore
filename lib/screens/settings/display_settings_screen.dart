@@ -23,7 +23,9 @@ class DisplaySettingsScreen extends StatelessWidget {
           RadioListTile<ThemeMode>(
             title: const Text('システム設定に従う'),
             value: ThemeMode.system,
+            // ignore: deprecated_member_use
             groupValue: themeProvider.themeMode,
+            // ignore: deprecated_member_use
             onChanged: (value) {
               if (value != null) {
                 // ProviderのsetThemeメソッドを呼び出してテーマを変更
@@ -36,7 +38,9 @@ class DisplaySettingsScreen extends StatelessWidget {
           RadioListTile<ThemeMode>(
             title: const Text('ライトモード'),
             value: ThemeMode.light,
+            // ignore: deprecated_member_use
             groupValue: themeProvider.themeMode,
+            // ignore: deprecated_member_use
             onChanged: (value) {
               if (value != null) {
                 context.read<ThemeProvider>().setTheme(
@@ -48,7 +52,9 @@ class DisplaySettingsScreen extends StatelessWidget {
           RadioListTile<ThemeMode>(
             title: const Text('ダークモード'),
             value: ThemeMode.dark,
+            // ignore: deprecated_member_use
             groupValue: themeProvider.themeMode,
+            // ignore: deprecated_member_use
             onChanged: (value) {
               if (value != null) {
                 context.read<ThemeProvider>().setTheme(

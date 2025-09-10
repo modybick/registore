@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/screens/settings/edit_unique_barcode_async_validator.dart';
 import 'package:registore/screens/settings/unique_barcode_async_validator.dart';
+import 'package:registore/services/image_service.dart';
 import 'package:registore/utils/currency_input_formatter.dart';
 import 'package:registore/utils/currency_value_accessor.dart';
 import 'package:registore/providers/settings_provider.dart';
@@ -31,14 +34,21 @@ class _ProductEditScreenState
   // カテゴリ候補リストを保持するState変数
   List<String> _categoryOptions = [];
 
-  // 画像パスのプレースホルダー
-  // String? _imagePath;
+  // 画像登録関連
+  final ImageService _imageService = ImageService();
+  String? _imagePath; // DBに保存するためのファイルパス
 
   @override
   void initState() {
     super.initState();
 
+    // 編集モードかどうか
     _isEditing = widget.product != null;
+
+    // 画像のパス
+    _imagePath = _isEditing
+        ? widget.product!.imagePath
+        : null;
 
     // initState内でProviderからデータを取得する安全な方法
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -58,8 +68,6 @@ class _ProductEditScreenState
         });
       }
     });
-
-    // TODO: _imagePath = _isEditing ? widget.product!.imagePath : null;
 
     // フォームの構造とバリデーションルールを定義
     form = FormGroup({
@@ -91,6 +99,78 @@ class _ProductEditScreenState
         value: _isEditing ? widget.product!.category : '',
       ),
     });
+  }
+
+  // 画像ファイルの選択
+  Future<void> _pickImage(ImageSourceType source) async {
+    final file = await _imageService.pickAndCropImage(
+      source,
+    );
+    if (file != null) {
+      setState(() {
+        _imagePath = file.path; // 取得したファイルのパスをStateに保存
+      });
+    }
+  }
+
+  /// 選択されている画像を削除する
+  void _deleteImage() {
+    setState(() {
+      _imagePath = null;
+    });
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('カメラで撮影'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSourceType.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('ギャラリーから選択'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSourceType.gallery);
+              },
+            ),
+            // 画像が既に選択されている場合のみ、「画像を削除」メニューを表示
+            if (_imagePath != null) const Divider(),
+            if (_imagePath != null)
+              ListTile(
+                leading: Icon(
+                  Icons.delete_outline,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.error,
+                ),
+                title: Text(
+                  '画像を削除',
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(
+                    context,
+                  ).pop(); // まずボトムシートを閉じる
+                  _deleteImage(); // 画像を削除する
+                },
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   // フォームを保存する処理
@@ -128,6 +208,7 @@ class _ProductEditScreenState
       name: form.control('name').value,
       price: form.control('price').value,
       category: categoryValue,
+      imagePath: _imagePath,
     );
 
     final provider = context.read<ProductProvider>();
@@ -260,22 +341,39 @@ class _ProductEditScreenState
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // --- 画像プレビュー ---
               GestureDetector(
-                onTap: () {
-                  /* TODO: 画像選択機能を実装 */
-                },
+                onTap:
+                    _showImageSourceDialog, // タップで選択ダイアログを表示
                 child: Container(
                   height: 150,
                   width: 150,
-                  color: Colors.grey[200],
-                  child: const Icon(
-                    Icons.camera_alt,
-                    size: 50,
-                    color: Colors.grey,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.shade400,
+                    ),
                   ),
+                  // _imagePathの状態に応じて表示を切り替え
+                  child: _imagePath != null
+                      // 画像が選択されていれば、それを表示
+                      ? ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_imagePath!),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      // なければ、カメラアイコンを表示
+                      : const Icon(
+                          Icons.camera_alt,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
                 ),
               ),
               const SizedBox(height: 24),

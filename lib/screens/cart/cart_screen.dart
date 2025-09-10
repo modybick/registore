@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:registore/main.dart';
 import '../../screens/payment/payment_screen.dart';
-import '../../screens/sale_history/sale_histry_screen.dart';
+import '../../screens/sale_history/sale_history_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../utils/formatter.dart';
 import '../../providers/cart_provider.dart';
@@ -318,6 +318,10 @@ class _CartListView extends StatelessWidget {
                 vertical: 4,
               ),
               child: ListTile(
+                contentPadding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 2.0,
+                ),
                 title: Consumer<SettingsProvider>(
                   builder: (context, settings, child) {
                     return Text(

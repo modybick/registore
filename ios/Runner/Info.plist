@@ -46,6 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>バーコードのスキャンにカメラを使用します。</string>
+	<string>バーコードのスキャン・商品画像撮影のためににカメラの使用を許可してください。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>商品画像を登録するために、写真ライブラリへのアクセスを許可してください。</string>
 </dict>
 </plist>
