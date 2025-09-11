@@ -216,25 +216,27 @@ class _SalesHistoryScreenState
               final bool isCancelled = sale.isCancelled;
               final textStyle = TextStyle(
                 color: isCancelled
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant
+                    ? Theme.of(context).colorScheme.error
                     : null,
                 decoration: isCancelled
                     ? TextDecoration.lineThrough
                     : null,
+                decorationColor: Theme.of(
+                  context,
+                ).colorScheme.error,
               );
               final amountStyle = TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: isCancelled
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant
+                    ? Theme.of(context).colorScheme.error
                     : null,
                 decoration: isCancelled
                     ? TextDecoration.lineThrough
                     : null,
+                decorationColor: Theme.of(
+                  context,
+                ).colorScheme.error,
               );
 
               return ListTile(

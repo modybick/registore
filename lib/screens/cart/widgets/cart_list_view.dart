@@ -56,9 +56,7 @@ class CartListView extends StatelessWidget {
                     IconButton(
                       icon: Icon(
                         Icons.remove_circle_outline,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.error,
+                        color: Colors.red[400],
                       ),
                       onPressed: () => context
                           .read<CartProvider>()
@@ -69,7 +67,7 @@ class CartListView extends StatelessWidget {
                       radius: 16,
                       backgroundColor: Theme.of(
                         context,
-                      ).primaryColor,
+                      ).colorScheme.primary,
                       child: Text(
                         '${item.quantity}',
                         style: TextStyle(
@@ -83,9 +81,7 @@ class CartListView extends StatelessWidget {
                     IconButton(
                       icon: Icon(
                         Icons.add_circle_outline,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.tertiary,
+                        color: Colors.green[400],
                       ),
                       onPressed: () => context
                           .read<CartProvider>()
