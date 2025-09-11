@@ -32,6 +32,25 @@ class SoundService {
   /// アプリ起動時に一度だけ呼び出し、音声をメモリにロードする
   /// このメソッドはmain()関数から呼び出す
   Future<void> init() async {
+    // 1. オーディオフォーカスを要求しない、という設定を作成
+    final AudioContext audioContext = AudioContext(
+      // iOS用の設定
+      iOS: AudioContextIOS(
+        // 短い効果音用のカテゴリ。他のアプリの音声を妨げない。
+        category: AVAudioSessionCategory.ambient,
+      ),
+      // Android用の設定
+      android: AudioContextAndroid(
+        // こちらも効果音用のストリームタイプ
+        audioFocus: AndroidAudioFocus.none,
+        usageType: AndroidUsageType.media,
+      ),
+    );
+
+    // 2. 各プレイヤーにオーディオコンテキストを設定
+    await _successPlayer.setAudioContext(audioContext);
+    await _errorPlayer.setAudioContext(audioContext);
+
     await AudioCache.instance.loadAll([
       'sounds/success.mp3',
       'sounds/error.mp3',
