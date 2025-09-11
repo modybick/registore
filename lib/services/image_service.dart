@@ -12,6 +12,7 @@ class ImageService {
   /// 画像を選択し、トリミングして、そのファイルのパスを返す
   Future<File?> pickAndCropImage(
     ImageSourceType source,
+    ColorScheme colorScheme,
   ) async {
     // 1. 画像を選択
     final pickedFile = await _picker.pickImage(
@@ -36,8 +37,9 @@ class ImageService {
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: '画像のトリミング',
-          toolbarColor: Colors.teal,
-          toolbarWidgetColor: Colors.white,
+          toolbarColor: colorScheme.surface,
+          toolbarWidgetColor: colorScheme.onSurface,
+          statusBarColor: colorScheme.surface,
           initAspectRatio: CropAspectRatioPreset.square,
           lockAspectRatio: true, // 縦横比を固定
         ),

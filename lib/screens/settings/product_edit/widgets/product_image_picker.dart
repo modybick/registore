@@ -35,6 +35,7 @@ class _ProductImagePickerState
   Future<void> _pickImage(ImageSourceType source) async {
     final file = await _imageService.pickAndCropImage(
       source,
+      Theme.of(context).colorScheme,
     );
     if (file != null) {
       setState(() => _currentImagePath = file.path);
@@ -108,9 +109,10 @@ class _ProductImagePickerState
         height: 150,
         width: 150,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade400),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline,
+          ),
         ),
         child: _currentImagePath != null
             ? ClipRRect(
@@ -120,10 +122,12 @@ class _ProductImagePickerState
                   fit: BoxFit.cover,
                 ),
               )
-            : const Icon(
+            : Icon(
                 Icons.camera_alt,
                 size: 50,
-                color: Colors.grey,
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant,
               ),
       ),
     );

@@ -159,119 +159,119 @@ class _ProductListScreenState
                             itemBuilder: (context, index) {
                               final product =
                                   products[index];
-                              return Card(
-                                margin:
-                                    const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 4.0,
-                                    ),
-                                child: ListTile(
-                                  leading: SizedBox(
-                                    width: 50, // 画像の幅を固定
-                                    height: 50, // 画像の高さを固定
-                                    child:
-                                        product.imagePath !=
-                                            null
-                                        ? ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(
-                                                  4.0,
-                                                ), // 少し角を丸くする
-                                            child: Image.file(
-                                              File(
-                                                product
-                                                    .imagePath!,
-                                              ),
-                                              fit: BoxFit
-                                                  .cover,
-                                              // エラーハンドリング: もしファイルが存在しなかった場合
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) {
-                                                    return const Icon(
-                                                      Icons
-                                                          .error_outline,
-                                                      color:
-                                                          Colors.red,
-                                                    );
-                                                  },
-                                            ),
-                                          )
-                                        : const Icon(
-                                            Icons
-                                                .image_outlined,
-                                            size: 40,
-                                            color:
-                                                Colors.grey,
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          ProductEditScreen(
+                                            product:
+                                                product,
                                           ),
-                                  ),
-                                  title: Consumer<SettingsProvider>(
-                                    builder: (context, settings, child) {
-                                      return Text(
-                                        product.name,
-                                        maxLines:
-                                            settings
-                                                .showFullName
-                                            ? null
-                                            : settings
-                                                  .productNameMaxLines,
-                                        overflow:
-                                            settings
-                                                .showFullName
-                                            ? TextOverflow
-                                                  .visible
-                                            : TextOverflow
-                                                  .ellipsis,
-                                      );
-                                    },
-                                  ),
-                                  subtitle: Text(
-                                    '${formatCurrency(product.price)}${(product.category == '' ? '' : ' / ${product.category}')}',
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize:
-                                        MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons
-                                              .edit_outlined,
-                                          color:
-                                              Colors.blue,
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  ProductEditScreen(
-                                                    product:
-                                                        product,
-                                                  ),
-                                            ),
-                                          ).then(
-                                            (_) =>
-                                                _refreshList(),
-                                          );
-                                        },
+                                    ),
+                                  ).then(
+                                    (_) => _refreshList(),
+                                  );
+                                },
+                                child: Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 4.0,
                                       ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons
-                                              .delete_outline,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.error,
-                                        ),
-                                        onPressed: () =>
-                                            _showDeleteConfirmation(
-                                              product,
+                                  child: ListTile(
+                                    leading: SizedBox(
+                                      width: 50, // 画像の幅を固定
+                                      height:
+                                          50, // 画像の高さを固定
+                                      child:
+                                          product.imagePath !=
+                                              null
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    4.0,
+                                                  ), // 少し角を丸くする
+                                              child: Image.file(
+                                                File(
+                                                  product
+                                                      .imagePath!,
+                                                ),
+                                                fit: BoxFit
+                                                    .cover,
+                                                // エラーハンドリング: もしファイルが存在しなかった場合
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) {
+                                                      return Icon(
+                                                        Icons.error_outline,
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.error,
+                                                      );
+                                                    },
+                                              ),
+                                            )
+                                          : Icon(
+                                              Icons
+                                                  .image_outlined,
+                                              size: 40,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.outlineVariant,
                                             ),
-                                      ),
-                                    ],
+                                    ),
+                                    title: Consumer<SettingsProvider>(
+                                      builder:
+                                          (
+                                            context,
+                                            settings,
+                                            child,
+                                          ) {
+                                            return Text(
+                                              product.name,
+                                              maxLines:
+                                                  settings
+                                                      .showFullName
+                                                  ? null
+                                                  : settings
+                                                        .productNameMaxLines,
+                                              overflow:
+                                                  settings
+                                                      .showFullName
+                                                  ? TextOverflow
+                                                        .visible
+                                                  : TextOverflow
+                                                        .ellipsis,
+                                            );
+                                          },
+                                    ),
+                                    subtitle: Text(
+                                      '${formatCurrency(product.price)}${(product.category == '' ? '' : ' / ${product.category}')}',
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize:
+                                          MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons
+                                                .delete_outline,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.error,
+                                          ),
+                                          onPressed: () =>
+                                              _showDeleteConfirmation(
+                                                product,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );

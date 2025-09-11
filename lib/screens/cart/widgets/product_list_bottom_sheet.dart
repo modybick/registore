@@ -41,7 +41,9 @@ class _ProductListBottomSheetState
             width: 40,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey[400],
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant,
               borderRadius: BorderRadius.circular(12),
             ),
           ),
@@ -167,17 +169,21 @@ class _ProductListBottomSheetState
                       fit: BoxFit.cover,
                       errorBuilder:
                           (context, error, stackTrace) {
-                            return const Icon(
+                            return Icon(
                               Icons.error_outline,
-                              color: Colors.red,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.error,
                             );
                           },
                     ),
                   )
-                : const Icon(
+                : Icon(
                     Icons.image_outlined,
                     size: 40,
-                    color: Colors.grey,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant,
                   ),
           ),
           title: Consumer<SettingsProvider>(

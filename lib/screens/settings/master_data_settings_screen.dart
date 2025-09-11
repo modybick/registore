@@ -115,12 +115,14 @@ class _MasterDataSettingsScreenState
         padding: const EdgeInsets.all(16.0),
         children: [
           // --- 商品マスタ ---
-          const ListTile(
+          ListTile(
             title: Text(
               '商品マスタ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: Theme.of(
+                  context,
+                ).colorScheme.tertiary,
               ),
             ),
           ),
@@ -157,12 +159,14 @@ class _MasterDataSettingsScreenState
           const Divider(height: 30),
 
           // --- 決済方法マスタ ---
-          const ListTile(
+          ListTile(
             title: Text(
               '決済方法マスタ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: Theme.of(
+                  context,
+                ).colorScheme.tertiary,
               ),
             ),
           ),
@@ -182,12 +186,14 @@ class _MasterDataSettingsScreenState
           const Divider(height: 30),
 
           // --- データ管理 ---
-          const ListTile(
+          ListTile(
             title: Text(
               'データ管理',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: Theme.of(
+                  context,
+                ).colorScheme.tertiary,
               ),
             ),
           ),

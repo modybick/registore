@@ -177,41 +177,38 @@ class _PaymentMethodListScreenState
             itemCount: provider.methods.length,
             itemBuilder: (context, index) {
               final method = provider.methods[index];
-              return Card(
-                // 1. ListTileをCardでラップ
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 4.0,
-                ),
-                child: ListTile(
-                  title: Text(
-                    method.name,
-                    style: const TextStyle(fontSize: 16),
+              return GestureDetector(
+                onTap: () =>
+                    _showEditDialog(method: method),
+                child: Card(
+                  // 1. ListTileをCardでラップ
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 4.0,
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 編集ボタン
-                      IconButton(
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.blue,
+                  child: ListTile(
+                    title: Text(
+                      method.name,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 2. 削除ボタンを追加
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          onPressed: () =>
+                              _showDeleteConfirmation(
+                                method,
+                              ),
                         ),
-                        onPressed: () =>
-                            _showEditDialog(method: method),
-                      ),
-                      // 2. 削除ボタンを追加
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.error,
-                        ),
-                        onPressed: () =>
-                            _showDeleteConfirmation(method),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

@@ -10,11 +10,11 @@ import '../../../screens/settings/settings_screen.dart';
 import '../../../utils/formatter.dart';
 
 /// 合計金額の表示と各種操作ボタンを持つパネルウィジェット
-class ControlPanel extends StatelessWidget {
+class CartControlPanel extends StatelessWidget {
   final VoidCallback onClearCart;
   final VoidCallback onShowProductList;
 
-  const ControlPanel({
+  const CartControlPanel({
     super.key,
     required this.onClearCart,
     required this.onShowProductList,
@@ -33,7 +33,7 @@ class ControlPanel extends StatelessWidget {
             // 上部に影をつけてコンテンツとの境界を明確にする
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black26,
                 spreadRadius: 0,
                 blurRadius: 10,
                 offset: const Offset(0, -5),
@@ -76,9 +76,13 @@ class ControlPanel extends StatelessWidget {
                           context,
                         ).colorScheme.error,
                         side: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.error,
+                          color: !isCartEmpty
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.error
+                              : Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant,
                         ),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,

@@ -33,12 +33,7 @@ class CompletePaymentButton extends StatelessWidget {
             ? SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.tertiary,
-                ),
+                child: CircularProgressIndicator(),
               )
             : const Text('会計を完了する'),
       ),

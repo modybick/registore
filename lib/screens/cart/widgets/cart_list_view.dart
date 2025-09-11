@@ -72,8 +72,10 @@ class CartListView extends StatelessWidget {
                       ).primaryColor,
                       child: Text(
                         '${item.quantity}',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -97,12 +99,12 @@ class CartListView extends StatelessWidget {
         );
       },
       // カートが空の時に表示するウィジェット
-      child: const Center(
+      child: Center(
         child: Text(
           '商品をスキャンしてください',
           style: TextStyle(
             fontSize: 18,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),

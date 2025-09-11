@@ -20,9 +20,7 @@ class SaleDetailsListView extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.inverseSurface,
+          color: Theme.of(context).colorScheme.outline,
         ),
         borderRadius: BorderRadius.circular(8.0),
       ),

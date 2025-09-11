@@ -92,11 +92,9 @@ class _SalesHistoryScreenState
                 // チェックボックスがONの場合のみ、削除ボタンを有効化する
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isChecked
-                        ? Theme.of(
-                            context,
-                          ).colorScheme.error
-                        : Colors.grey,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.error,
                   ),
                   onPressed: isChecked
                       ? () async {
@@ -183,9 +181,7 @@ class _SalesHistoryScreenState
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
                 width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(),
               ),
             )
           else
@@ -219,7 +215,11 @@ class _SalesHistoryScreenState
               // 取り消し状態に応じてスタイルを決定
               final bool isCancelled = sale.isCancelled;
               final textStyle = TextStyle(
-                color: isCancelled ? Colors.grey : null,
+                color: isCancelled
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant
+                    : null,
                 decoration: isCancelled
                     ? TextDecoration.lineThrough
                     : null,
@@ -227,7 +227,11 @@ class _SalesHistoryScreenState
               final amountStyle = TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isCancelled ? Colors.grey : null,
+                color: isCancelled
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant
+                    : null,
                 decoration: isCancelled
                     ? TextDecoration.lineThrough
                     : null,

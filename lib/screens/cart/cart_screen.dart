@@ -10,7 +10,7 @@ import '../../services/database_service.dart';
 import '../../services/sound_service.dart';
 import '../../widgets/app_scaffold.dart';
 import 'widgets/cart_list_view.dart';
-import 'widgets/control_panel.dart';
+import 'widgets/cart_control_panel.dart';
 import 'widgets/product_list_bottom_sheet.dart';
 import 'widgets/scanner_view.dart';
 
@@ -51,7 +51,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           const Expanded(child: CartListView()),
-          ControlPanel(
+          CartControlPanel(
             onClearCart: _showClearCartDialog,
             onShowProductList: _showProductListBottomSheet,
           ),
