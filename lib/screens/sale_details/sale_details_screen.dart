@@ -15,17 +15,17 @@ import 'widgets/sale_details_list_view.dart';
 import 'widgets/sale_summary_card.dart';
 
 /// 販売履歴詳細画面
-class SaleDetailScreen extends StatefulWidget {
+class SaleDetailsScreen extends StatefulWidget {
   final Sale sale;
-  const SaleDetailScreen({super.key, required this.sale});
+  const SaleDetailsScreen({super.key, required this.sale});
 
   @override
-  State<SaleDetailScreen> createState() =>
-      _SaleDetailScreenState();
+  State<SaleDetailsScreen> createState() =>
+      _SaleDetailsScreenState();
 }
 
-class _SaleDetailScreenState
-    extends State<SaleDetailScreen> {
+class _SaleDetailsScreenState
+    extends State<SaleDetailsScreen> {
   // DBから詳細リストを取得するためのFuture
   late Future<List<SaleDetail>> _detailsFuture;
   // キャンセル状態をUIに反映させるためのローカルState

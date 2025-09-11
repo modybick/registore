@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:registore/utils/formatter.dart';
 import '../../providers/sales_provider.dart';
 import '../../widgets/app_scaffold.dart';
-import '../sale_details/sale_detail_screen.dart';
+import '../sale_details/sale_details_screen.dart';
 import '../../services/csv_service.dart';
 
 class SalesHistoryScreen extends StatefulWidget {
@@ -251,7 +251,7 @@ class _SalesHistoryScreenState
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          SaleDetailScreen(sale: sale),
+                          SaleDetailsScreen(sale: sale),
                     ),
                   );
                 },
