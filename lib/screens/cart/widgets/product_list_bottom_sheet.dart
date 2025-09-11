@@ -131,8 +131,7 @@ class _ProductListBottomSheetState
                                                   category,
                                                 ),
                                           );
-                                        })
-                                        .toList(),
+                                        }),
                                   ],
                                 ),
                               ),

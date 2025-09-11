@@ -217,6 +217,7 @@ class _ProductEditScreenState
                 widget.product!.id!,
               );
               if (!mounted) return;
+              // ignore: use_build_context_synchronously
               Navigator.pop(ctx); // ダイアログを閉じる
               Navigator.pop(context); // 編集画面を閉じる
             },

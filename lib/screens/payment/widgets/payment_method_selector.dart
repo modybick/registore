@@ -43,8 +43,9 @@ class PaymentMethodSelector extends StatelessWidget {
                       selected:
                           selectedMethod == method.name,
                       onSelected: (selected) {
-                        if (selected)
+                        if (selected) {
                           onMethodSelected(method.name);
+                        }
                       },
                     ),
                   );
