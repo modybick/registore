@@ -98,61 +98,84 @@ class SoundService {
   }
 
   // 成功時の効果音とバイブレーションを再生する
-  Future<void> playSuccessSound() async {
+  Future<void> playSuccessSound({
+    required bool vibrationEnabled,
+    required double volume,
+  }) async {
     try {
-      bool? hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator == true) {
-        Vibration.vibrate(duration: 100);
+      // vibrationEnabledがtrueの場合のみ振動させる
+      if (vibrationEnabled) {
+        bool? hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator == true) {
+          Vibration.vibrate(duration: 100);
+        }
       }
-      // 事前ロード済みの音声を再生
-      await _playSound(_successPlayer);
+      // 事前ロード済みの音声を、指定された音量で再生
+      await _playSound(_successPlayer, volume);
     } catch (e) {
-      // print("Success sound playback error: $e");
+      /* ... */
     }
   }
 
   // 失敗時の効果音とバイブレーションを再生する
-  Future<void> playErrorSound() async {
+  Future<void> playErrorSound({
+    required bool vibrationEnabled,
+    required double volume,
+  }) async {
     try {
-      bool? hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator == true) {
-        Vibration.vibrate(duration: 500);
+      if (vibrationEnabled) {
+        bool? hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator == true) {
+          Vibration.vibrate(duration: 500);
+        }
       }
-      // 事前ロード済みの音声を再生
-      await _playSound(_errorPlayer);
+      await _playSound(_errorPlayer, volume);
     } catch (e) {
       // print("Error sound playback error: $e");
     }
   }
 
-  Future<void> playCheckoutSound() async {
+  Future<void> playCheckoutSound({
+    required bool vibrationEnabled,
+    required double volume,
+  }) async {
     try {
-      bool? hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator == true) {
-        Vibration.vibrate(duration: 300);
+      if (vibrationEnabled) {
+        bool? hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator == true) {
+          Vibration.vibrate(duration: 300);
+        }
       }
-      // 事前ロード済みの音声を再生
-      await _playSound(_checkoutPlayer);
+      await _playSound(_checkoutPlayer, volume);
     } catch (e) {
-      // print("Error sound playback error: $e");
+      /* ... */
     }
   }
 
-  Future<void> playDecrementSound() async {
+  Future<void> playDecrementSound({
+    required bool vibrationEnabled,
+    required double volume,
+  }) async {
     try {
-      bool? hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator == true) {
-        Vibration.vibrate(duration: 100);
+      if (vibrationEnabled) {
+        bool? hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator == true) {
+          Vibration.vibrate(duration: 100);
+        }
       }
-      // 事前ロード済みの音声を再生
-      await _playSound(_decrementPlayer);
+      await _playSound(_decrementPlayer, volume);
     } catch (e) {
       // print("Error sound playback error: $e");
     }
   }
 
   // 共通の再生ロジック
-  Future<void> _playSound(AudioPlayer player) async {
+  Future<void> _playSound(
+    AudioPlayer player,
+    double volume,
+  ) async {
+    // ボリューム設定
+    await player.setVolume(volume);
     // もし再生中なら一度止めて、カーソルを先頭に戻す
     await player.stop();
     // 再生を開始する

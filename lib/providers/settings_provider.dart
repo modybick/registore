@@ -30,10 +30,22 @@ class SettingsProvider with ChangeNotifier {
   static const String _productNameMaxLinesKey =
       'product_name_max_lines';
 
+  // バーコードなし商品タブを表示するか
   bool _showNoBarcodeTab = true; // デフォルトは表示する
   bool get showNoBarcodeTab => _showNoBarcodeTab;
   static const String _showNoBarcodeTabKey =
       'show_no_barcode_tab';
+
+  // バイブ設定
+  bool _vibrationEnabled = true; // デフォルトはON
+  bool get vibrationEnabled => _vibrationEnabled;
+  static const String _vibrationEnabledKey =
+      'vibration_enabled';
+
+  // 音量設定
+  double _volume = 0.8; // デフォルトは80%
+  double get volume => _volume;
+  static const String _volumeKey = 'volume';
 
   SettingsProvider() {
     // Providerが作成されたときに、保存された設定値をロードする
@@ -64,6 +76,12 @@ class SettingsProvider with ChangeNotifier {
     // バーコードなし商品タブ表示設定
     _showNoBarcodeTab =
         prefs.getBool(_showNoBarcodeTabKey) ?? true;
+
+    // バイブ
+    _vibrationEnabled =
+        prefs.getBool(_vibrationEnabledKey) ?? true;
+    // 音量
+    _volume = prefs.getDouble(_volumeKey) ?? 0.8;
 
     notifyListeners();
   }
@@ -147,5 +165,21 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_showNoBarcodeTabKey, newValue);
+  }
+
+  // バイブ
+  Future<void> updateVibration(bool isEnabled) async {
+    _vibrationEnabled = isEnabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_vibrationEnabledKey, isEnabled);
+  }
+
+  // 音量
+  Future<void> updateVolume(double newVolume) async {
+    _volume = newVolume;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_volumeKey, newVolume);
   }
 }

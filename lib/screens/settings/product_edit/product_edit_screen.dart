@@ -159,6 +159,11 @@ class _ProductEditScreenState
     );
     final soundService = SoundService();
 
+    final vibrationEnabled = context
+        .read<SettingsProvider>()
+        .vibrationEnabled;
+    final volume = context.read<SettingsProvider>().volume;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -173,7 +178,10 @@ class _ProductEditScreenState
                   capture.barcodes.first.rawValue;
               if (barcodeValue != null &&
                   barcodeValue.isNotEmpty) {
-                soundService.playSuccessSound();
+                soundService.playSuccessSound(
+                  vibrationEnabled: vibrationEnabled,
+                  volume: volume,
+                );
                 form.control('barcode').value =
                     barcodeValue; // フォームに値をセット
                 Navigator.pop(dialogContext);

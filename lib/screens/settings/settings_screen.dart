@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:registore/screens/settings/display_settings_screen.dart';
+import 'package:registore/screens/settings/base_settings_screen.dart';
 import 'package:registore/screens/settings/product_display_settings_screen.dart';
 import '../../widgets/app_scaffold.dart';
 import 'barcode_settings_screen.dart'; // 新しい画面をインポート
@@ -17,15 +17,15 @@ class SettingsScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.brightness_6),
-            title: const Text('ディスプレイ設定'),
-            subtitle: const Text('テーマ・フォントサイズ等の設定をします。'),
+            title: const Text('基本設定'),
+            subtitle: const Text('音やアプリテーマの設定をします。'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      const DisplaySettingsScreen(),
+                      const BaseSettingsScreen(),
                 ),
               );
             },

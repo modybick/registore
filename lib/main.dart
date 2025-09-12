@@ -41,13 +41,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => CartProvider(),
-        ),
-        ChangeNotifierProvider(
           create: (_) => ProductProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => SalesProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) => SettingsProvider(),
@@ -57,6 +51,38 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(),
+        ),
+        // `ChangeNotifierProxyProvider` を使って、
+        // `SettingsProvider` のインスタンスを `CartProvider` に渡す
+        ChangeNotifierProxyProvider<
+          SettingsProvider,
+          CartProvider
+        >(
+          // `CartProvider` のインスタンスを生成する部分
+          create: (context) => CartProvider(
+            // 最初に一度だけ `SettingsProvider` を読み込む
+            context.read<SettingsProvider>(),
+          ),
+
+          // `SettingsProvider` が更新されたときに、`CartProvider` も更新する場合に使う
+          // (今回はコンストラクタで渡すだけで良いので、古いインスタンスをそのまま返す)
+          update: (context, settings, previousCart) =>
+              previousCart!,
+        ),
+        ChangeNotifierProxyProvider<
+          SettingsProvider,
+          SalesProvider
+        >(
+          // `CartProvider` のインスタンスを生成する部分
+          create: (context) => SalesProvider(
+            // 最初に一度だけ `SettingsProvider` を読み込む
+            context.read<SettingsProvider>(),
+          ),
+
+          // `SettingsProvider` が更新されたときに、`CartProvider` も更新する場合に使う
+          // (今回はコンストラクタで渡すだけで良いので、古いインスタンスをそのまま返す)
+          update: (context, settings, previousSale) =>
+              previousSale!,
         ),
       ],
       child: Consumer<ThemeProvider>(

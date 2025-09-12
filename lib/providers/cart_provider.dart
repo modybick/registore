@@ -1,12 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:registore/models/sale_detail_model.dart';
+import 'package:registore/providers/settings_provider.dart';
 import 'package:registore/services/sound_service.dart';
 import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
 
 // ChangeNotifierをミックスインして、変更通知機能を持つクラスを作成
 class CartProvider with ChangeNotifier {
-  final SoundService _soundService = SoundService();
+  final SoundService _soundService = SoundService.instance;
+  // SettingsProviderへの参照を保持する
+  late final SettingsProvider _settingsProvider;
+  // コンストラクタでSettingsProviderを受け取る
+  CartProvider(this._settingsProvider);
+
   // カート内の商品を管理するMap。キーはバーコード(String)、値はCartItem。
   // プライベート変数(_items)として外部から直接変更できないようにする。
   final Map<int, CartItem> _items = {};
@@ -55,7 +61,10 @@ class CartProvider with ChangeNotifier {
         ),
       );
     }
-    _soundService.playSuccessSound();
+    _soundService.playSuccessSound(
+      vibrationEnabled: _settingsProvider.vibrationEnabled,
+      volume: _settingsProvider.volume,
+    );
     // 状態が変更されたことをリスナー（UIなど）に通知する。
     notifyListeners();
   }
@@ -72,7 +81,11 @@ class CartProvider with ChangeNotifier {
           quantity: existing.quantity + 1,
         ),
       );
-      _soundService.playSuccessSound();
+      _soundService.playSuccessSound(
+        vibrationEnabled:
+            _settingsProvider.vibrationEnabled,
+        volume: _settingsProvider.volume,
+      );
       notifyListeners();
     }
   }
@@ -97,7 +110,10 @@ class CartProvider with ChangeNotifier {
       // 商品の数量が1の場合は、カートからその商品を削除する。
       _items.remove(id);
     }
-    _soundService.playDecrementSound();
+    _soundService.playDecrementSound(
+      vibrationEnabled: _settingsProvider.vibrationEnabled,
+      volume: _settingsProvider.volume,
+    );
     notifyListeners();
   }
 

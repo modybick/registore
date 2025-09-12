@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:registore/providers/settings_provider.dart';
 import 'package:registore/services/sound_service.dart';
 import '../models/cart_item_model.dart';
 import '../models/sale_model.dart';
@@ -11,7 +12,11 @@ class SalesProvider with ChangeNotifier {
   List<Sale> get sales => _sales;
   bool get isLoading => _isLoading;
 
-  final SoundService _soundService = SoundService();
+  final SoundService _soundService = SoundService.instance;
+  // SettingsProviderへの参照を保持する
+  late final SettingsProvider _settingsProvider;
+  // コンストラクタでSettingsProviderを受け取る
+  SalesProvider(this._settingsProvider);
 
   // 販売履歴をDBに保存する
   Future<void> addSale({
@@ -30,7 +35,10 @@ class SalesProvider with ChangeNotifier {
       newSale,
       items,
     );
-    _soundService.playCheckoutSound();
+    _soundService.playCheckoutSound(
+      vibrationEnabled: _settingsProvider.vibrationEnabled,
+      volume: _settingsProvider.volume,
+    );
     // 保存後、リストを再読み込みする
     await loadSalesHistory();
   }

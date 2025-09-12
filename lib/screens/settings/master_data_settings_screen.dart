@@ -116,18 +116,14 @@ class _MasterDataSettingsScreenState
         children: [
           // --- 商品マスタ ---
           ListTile(
+            leading: Icon(Icons.inventory_2_outlined),
             title: Text(
               '商品マスタ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(
-                  context,
-                ).colorScheme.tertiary,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.inventory_2_outlined),
+            leading: const Icon(Icons.edit_note),
             title: const Text('商品マスタの編集'),
             subtitle: const Text('商品の追加、編集、削除を行います。'),
             trailing: const Icon(Icons.arrow_forward_ios),
@@ -160,18 +156,14 @@ class _MasterDataSettingsScreenState
 
           // --- 決済方法マスタ ---
           ListTile(
+            leading: const Icon(Icons.payment),
             title: Text(
               '決済方法マスタ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(
-                  context,
-                ).colorScheme.tertiary,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.payment),
+            leading: const Icon(Icons.edit_note),
             title: const Text('決済方法の編集'),
             subtitle: const Text('会計画面に表示する決済方法を編集します。'),
             trailing: const Icon(Icons.arrow_forward_ios),
@@ -187,14 +179,10 @@ class _MasterDataSettingsScreenState
 
           // --- データ管理 ---
           ListTile(
+            leading: const Icon(Icons.list),
             title: Text(
               'データ管理',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(
-                  context,
-                ).colorScheme.tertiary,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           ListTile(

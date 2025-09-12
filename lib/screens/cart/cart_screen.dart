@@ -80,12 +80,17 @@ class _CartScreenState extends State<CartScreen> {
       // 非同期処理後にウィジェットが破棄されている可能性を考慮
       if (!mounted) return;
 
+      final settings = context.read<SettingsProvider>();
+
       final cartProvider = context.read<CartProvider>();
 
       if (product != null) {
         cartProvider.addItem(product);
       } else {
-        _soundService.playErrorSound();
+        _soundService.playErrorSound(
+          vibrationEnabled: settings.vibrationEnabled,
+          volume: settings.volume,
+        );
         _showErrorSnackBar('商品が見つかりません: $barcodeValue');
       }
 
